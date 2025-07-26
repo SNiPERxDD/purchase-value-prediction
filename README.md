@@ -2,7 +2,6 @@
 
 ![Status](https://img.shields.io/badge/Status-Public-brightgreen)
 ![Built with](https://img.shields.io/badge/Built%20with-Python%203.10-blue)
-![License](https://img.shields.io/badge/License-MIT-green)
 ![R² Score](https://img.shields.io/badge/R²%20Score-0.8637-brightgreen)
 
 > **An end-to-end machine learning pipeline for predicting customer purchase value from multi-session web behavior using a sophisticated two-stage ensemble with XGBoost, achieving 86.37% R² accuracy.**
