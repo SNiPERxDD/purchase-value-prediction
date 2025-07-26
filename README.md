@@ -151,8 +151,8 @@ python src/Predictor.py
 ```
 
 ### **Expected Output**
-- **Generated predictions**: `output/submission.csv`
-- **Sample format**: `output/sample_submission.csv`
+- **Generated predictions**: `output/submission.csv` (29,007 predictions)
+- **Sample format**: `output/sample_submission.csv` (10 sample predictions)
 - **Memory usage**: < 3 GB
 - **Processing time**: ~5-10 minutes (CPU only)
 
@@ -169,8 +169,8 @@ purchase-value-prediction/
 │   ├── Predictor.py            # Main prediction pipeline
 │   └── HyperParams.py          # Hyperparameter tuning
 ├── 📤 output/
-│   ├── submission.csv          # Generated predictions
-│   ├── sample_submission.csv   # Sample output format
+│   ├── submission.csv          # Generated predictions (29k rows)
+│   ├── sample_submission.csv   # Sample output format (10 rows)
 │   └── .gitkeep               # Directory structure
 ├── 📋 README.md               # Project documentation
 ├── 📊 RESULTS.md              # Detailed results analysis
