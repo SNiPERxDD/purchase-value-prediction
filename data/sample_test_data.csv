@@ -1,0 +1,6 @@
+userId,date,pageViews,totalHits,sessionNumber,trafficSource.adContent,trafficSource.adwordsClickInfo.isVideoAd,trafficSource.adwordsClickInfo.page,trafficSource.adwordsClickInfo.adNetworkType,trafficSource.adwordsClickInfo.slot
+6,20240106,4,18,1,AdE,1,2,NetworkA,SlotA
+7,20240107,7,28,2,AdF,0,1,NetworkB,SlotB
+8,20240108,5,22,1,,,2,,
+9,20240109,3,12,3,AdG,1,3,NetworkC,SlotC
+10,20240110,9,35,2,AdH,0,1,NetworkA,SlotA 
