@@ -1,5 +1,5 @@
 # Output files
-output/*.csv
+# output/*.csv  # <-- Commented out to allow submission.csv
 output/*.json
 output/*.pkl
 output/*.joblib
@@ -58,7 +58,6 @@ ehthumbs.db
 Thumbs.db
 
 # Data files (if large)
-*.csv
 *.json
 *.parquet
 *.h5
