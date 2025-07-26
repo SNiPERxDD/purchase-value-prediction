@@ -52,8 +52,9 @@ This production-ready ML pipeline predicts customer purchase values from web beh
 ## 📊 Dataset
 
 ### **Statistics**
-- **Training Set**: 116,023 rows × 52 columns
-- **Test Set**: 29,006 rows × 51 columns
+- **Training Set**: 116,023 rows × 52 columns *(not included in repo)*
+- **Test Set**: 29,006 rows × 51 columns *(not included in repo)*
+- **Sample Files**: `data/sample_train_data.csv`, `data/sample_test_data.csv` *(included for demo/testing)*
 - **Target Variable**: `purchaseValue` (continuous, heavily right-skewed)
 
 ### **Data Quality Insights**
@@ -143,7 +144,10 @@ cd purchase-value-prediction
 pip install -r requirements.txt
 
 # 3. Add your data files
-# Place train_data.csv and test_data.csv in the data/ folder
+# Place train_data.csv and test_data.csv in the data/ folder (not included in repo)
+# Or use the provided sample files for testing/demo:
+#   data/sample_train_data.csv
+#   data/sample_test_data.csv
 
 # 4. Run the pipeline
 python src/Predictor.py
@@ -162,8 +166,10 @@ python src/Predictor.py
 ```
 purchase-value-prediction/
 ├── 📊 data/
-│   ├── train_data.csv          # Training dataset
-│   └── test_data.csv           # Test dataset
+│   ├── sample_train_data.csv    # Sample training data (included)
+│   ├── sample_test_data.csv     # Sample test data (included)
+│   ├── train_data.csv           # Full training data (not included)
+│   └── test_data.csv            # Full test data (not included)
 ├── 📁 src/
 │   ├── Predictor.py            # Main prediction pipeline
 │   └── HyperParams.py          # Hyperparameter tuning
