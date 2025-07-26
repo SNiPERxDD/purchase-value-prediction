@@ -57,11 +57,12 @@ venv.bak/
 ehthumbs.db
 Thumbs.db
 
-# Data files (if large)
-*.json
-*.parquet
-*.h5
-*.hdf5
+# Data files
+# Hide only the main datasets, not the folder or samples
+data/train_data.csv
+data/test_data.csv
+!data/sample_train_data.csv
+!data/sample_test_data.csv
 
 # Model files
 *.pkl
