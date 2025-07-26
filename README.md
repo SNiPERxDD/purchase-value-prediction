@@ -1,6 +1,6 @@
 # Purchase Value Prediction – ML Pipeline
 
-![Status](https://img.shields.io/badge/Status-Private-brightred)
+![Status](https://img.shields.io/badge/Status-Private-red)
 ![Built with](https://img.shields.io/badge/Built%20with-Python%203.10-blue)
 ![R² Score](https://img.shields.io/badge/R²%20Score-0.8637-brightgreen)
 
