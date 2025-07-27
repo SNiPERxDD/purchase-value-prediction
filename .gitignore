@@ -6,6 +6,7 @@ output/*.joblib
 
 # Keep output directory and sample files
 !output/.gitkeep
+output/submission.csv
 !output/sample_submission.csv
 
 # Python

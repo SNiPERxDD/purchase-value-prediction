@@ -59,8 +59,8 @@ purchase-value-prediction/
 │   ├── Predictor.py             # Main prediction pipeline
 │   └── HyperParams.py           # Hyperparameter tuning
 ├── 📤 output/
-│   ├── submission.csv           # Generated predictions (29k rows)
 │   ├── sample_submission.csv    # Sample output format (10 rows)
+│   ├── submission.csv           # Generated predictions (not included)
 │   └── .gitkeep                 # Directory structure
 ├── 📋 README.md                 # Project documentation
 ├── 📊 RESULTS.md                # Detailed results analysis
@@ -113,6 +113,13 @@ pip install -r requirements.txt
 # Place train_data.csv and test_data.csv in ./data/ folder
 
 # Run the pipeline
+
+# Step 1: Run hyperparameter search (optional but recommended)
+python src/HyperParams.py
+
+# → Copy the best parameters into Predictor.py manually (hardcoded)
+
+# Step 2: Run the prediction pipeline
 python src/Predictor.py
 # → output/submission.csv
 ```
