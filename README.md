@@ -3,7 +3,7 @@
 [![Status](https://img.shields.io/badge/Status-Public-brightgreen)](#)
 [![Built with](https://img.shields.io/badge/Built%20with-Python%203.10+-blue)](#)
 [![R² Score](https://img.shields.io/badge/R²%20Score-0.864-brightgreen)](#)
-[![License](https://img.shields.io/badge/License-MIT-green)](#)
+[![License](https://img.shields.io/badge/License-All%20Rights%20Reserved-red)](#)
 
 > **End-to-end ML pipeline that predicts customer purchase value from web-session data using a sophisticated two-stage ensemble approach.**
 
@@ -11,16 +11,17 @@
 
 ## 📋 Table of Contents
 
-- [Project Snapshot](#1-project-snapshot)
-- [What's Inside](#2-whats-inside)
-- [How It Works](#3-how-it-works-short)
-- [Quick Start](#4-run-it)
-- [Results](#5-results-20-hold-out)
-- [Next Steps](#6-next-steps-not-done-yet)
+- [1. Project Snapshot](#1-project-snapshot)
+- [2. What's Inside](#2-whats-inside)
+- [3. Project Structure](#3-project-structure)
+- [4. How It Works](#4-how-it-works-short)
+- [5. Quick Start](#5-run-it)
+- [6. Results](#6-results-20-hold-out)
+- [7. Next Steps](#7-next-steps-not-done-yet)
 
 ---
 
-## 1 Project Snapshot
+## 1. Project Snapshot
 
 | Item                        | Notes                                                      |
 |-----------------------------|------------------------------------------------------------|
@@ -33,7 +34,7 @@
 
 ---
 
-## 2 What's Inside
+## 2. What's Inside
 
 | Folder / File      | Purpose                                   |
 |--------------------|-------------------------------------------|
@@ -45,7 +46,32 @@
 
 ---
 
-## 3 How It Works (short)
+## 3. Project Structure
+
+```
+purchase-value-prediction/
+├── 📊 data/
+│   ├── sample_train_data.csv    # Sample training data (included)
+│   ├── sample_test_data.csv     # Sample test data (included)
+│   ├── train_data.csv           # Full training data (not included)
+│   └── test_data.csv            # Full test data (not included)
+├── 📁 src/
+│   ├── Predictor.py             # Main prediction pipeline
+│   └── HyperParams.py           # Hyperparameter tuning
+├── 📤 output/
+│   ├── submission.csv           # Generated predictions (29k rows)
+│   ├── sample_submission.csv    # Sample output format (10 rows)
+│   └── .gitkeep                 # Directory structure
+├── 📋 README.md                 # Project documentation
+├── 📊 RESULTS.md                # Detailed results analysis
+├── 📦 requirements.txt          # Python dependencies
+├── 📄 LICENSE                   # All rights reserved
+└── 🚫 .gitignore                # Git ignore rules
+```
+
+---
+
+## 4. How It Works (short)
 
 ### **Pipeline Overview**
 ```
@@ -68,7 +94,7 @@ Raw Data → Preprocessing → Feature Engineering → Two-Stage Model → Predi
 
 ---
 
-## 4 Run It
+## 5. Run It
 
 ### **Prerequisites**
 ```bash
@@ -95,7 +121,7 @@ python src/Predictor.py
 
 ---
 
-## 5 Results (20% hold-out)
+## 6. Results (20% hold-out)
 
 ### **Performance Metrics**
 
@@ -114,7 +140,7 @@ python src/Predictor.py
 
 ---
 
-## 6 Next Steps (not done yet)
+## 7. Next Steps (not done yet)
 
 - [ ] **Unit tests** for feature pipeline
 - [ ] **SHAP plots** for interpretability  
@@ -131,6 +157,14 @@ python src/Predictor.py
 - ✅ **CPU-optimized** implementation
 - ✅ **Production-ready** output format
 - ✅ **Comprehensive documentation**
+
+---
+
+## 📄 License
+
+This repository is for academic demonstration purposes only.
+
+All rights to the code and models are reserved by the author. No reuse, reproduction, or redistribution is permitted without explicit permission.
 
 ---
 
