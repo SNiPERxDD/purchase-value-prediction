@@ -89,4 +89,4 @@ Numbers may vary slightly on different hardware/Python seeds.
 - Unit tests for feature pipeline
 - SHAP plots for interpretability  
 - Simple REST endpoint for inference
-- Periodic retraining script 
+- Periodic retraining script
