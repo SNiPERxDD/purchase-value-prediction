@@ -203,12 +203,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Type-safe JSON serialization for parameter storage
 
 ### Changed
-- **File Naming Standardization**
-  - `submission.csv` → `prediction.csv`
-  - `sample_submission.csv` → `sample_prediction.csv`
-  - Updated all code references and documentation for consistency
-  - Modified output paths to use `output/` directory structure
-
 - **Code Structure Improvements**
   - Monolithic execution → structured main() functions
   - Inline error handling → centralized exception management
