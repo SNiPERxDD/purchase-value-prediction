@@ -128,7 +128,7 @@ Refine Best → lr=0.1, depth=8, gamma=0, lambda=10 → R²=0.86
 
 | Environment                | HyperParams runtime | Predictor runtime |
 |----------------------------|--------------------:|------------------:|
-| **MacBook Air (M2, 16-GB, CPU-only)** | ~4 min 42 s | ~1 min 21 s |
+| **MacBook Air (M2, 24-GB, CPU-only)** | ~4 min 42 s | ~1 min 21 s |
 | **Kaggle "CPU Only" notebook**         | ~15 min 14 s | ~4 min 05 s |
 
 ---
