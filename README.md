@@ -41,7 +41,7 @@
 | `src/Predictor.py` | Main pipeline – read → train → predict     |
 | `src/HyperParams.py` | Offline grid-search for best XGB settings |
 | `data/`            | **Sample** CSVs (tiny, anonymised)        |
-| `output/`          | Generated `submission.csv`                |
+| `output/`          | Generated `prediction.csv`                |
 | `requirements.txt` | Exact library versions                    |
 
 ---
@@ -59,8 +59,8 @@ purchase-value-prediction/
 │   ├── Predictor.py             # Main prediction pipeline
 │   └── HyperParams.py           # Hyperparameter tuning
 ├── 📤 output/
-│   ├── sample_submission.csv    # Sample output format (10 rows)
-│   ├── submission.csv           # Generated predictions (not included)
+│   ├── sample_prediction.csv    # Sample output format (10 rows)
+│   ├── prediction.csv           # Generated predictions (not included)
 │   └── .gitkeep                 # Directory structure
 ├── 📋 README.md                 # Project documentation
 ├── 📊 RESULTS.md                # Detailed results analysis
@@ -121,7 +121,7 @@ python src/HyperParams.py
 
 # Step 2: Run the prediction pipeline
 python src/Predictor.py
-# → output/submission.csv
+# → output/prediction.csv
 ```
 
 **Performance**: ~5–10 min on modern laptop; RAM < 3 GB

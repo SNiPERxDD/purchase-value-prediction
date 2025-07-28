@@ -306,4 +306,4 @@ pred_te  = np.expm1(xgb_final.predict(test))
 pd.DataFrame({
     'id': np.arange(len(test)),
     'purchaseValue': p_buy_te * pred_te
-}).to_csv('submission.csv', index=False)
+}).to_csv('output/prediction.csv', index=False)
