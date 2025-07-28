@@ -5,6 +5,24 @@ All notable changes to the Purchase Value Prediction pipeline are documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6] - 2025-01-28
+
+### Fixed
+- **Progress Bar Display Issues**
+  - Fixed progress bars not reaching 100% completion (missing final `pbar.update(1)`)
+  - Resolved summary prints being overwritten by tqdm progress bar updates
+  - Used `tqdm.write()` instead of `print()` for output during progress tracking
+  - Added proper progress bar closure with `pbar.close()` before final messages
+
+### Changed
+- **Enhanced Progress Bar Experience**
+  - All progress bars now properly complete to 100%
+  - Summary statistics and results remain visible after completion
+  - Better integration between logging and progress tracking
+  - Cleaner final output with preserved summary information
+
+---
+
 ## [1.0.5] - 2025-01-28
 
 ### Added

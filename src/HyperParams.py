@@ -433,7 +433,7 @@ def main():
                     logger.warning(f"⚠️  Coarse tuning iteration failed: {e}")
                     continue
 
-            logger.info(f"Coarse Best → subs={bs}, col={bc}, mcw={bm} → R²={best_r2:.4f}")
+            tqdm.write(f"Coarse Best → subs={bs}, col={bc}, mcw={bm} → R²={best_r2:.4f}")
             pbar.update(1)
 
             # Step 6: Refined Hyperparameter Tuning
@@ -464,7 +464,7 @@ def main():
                     logger.warning(f"⚠️  Refined tuning iteration failed: {e}")
                     continue
 
-            logger.info(f"Refine Best → lr={best_cfg[0]}, depth={best_cfg[1]}, gamma={best_cfg[2]}, lambda={best_cfg[3]} → R²={best_r2_2:.4f}")
+            tqdm.write(f"Refine Best → lr={best_cfg[0]}, depth={best_cfg[1]}, gamma={best_cfg[2]}, lambda={best_cfg[3]} → R²={best_r2_2:.4f}")
             pbar.update(1)
 
             # Step 7: Final Model Training
@@ -483,7 +483,7 @@ def main():
             pred_val = np.expm1(safe_predict(xgb_final, X_val, "Final XGB Regressor"))
             y_hat = p_buy * pred_val
             final_r2 = r2_score(y_val, y_hat)
-            logger.info(f"🔧 FINAL Validation R²: {final_r2:.4f}")
+            tqdm.write(f"🔧 FINAL Validation R²: {final_r2:.4f}")
             pbar.update(1)
 
             # Step 8: Saving Best Parameters
@@ -520,8 +520,13 @@ def main():
                 json.dump(best_params, f, indent=2)
 
             logger.info("✅ Best parameters saved to output/best_params.json")
-            logger.info("🎉 Hyperparameter tuning completed successfully!")
             pbar.update(1)
+            pbar.close()
+            
+            # Now safe to print final messages normally
+            print("🎉 Hyperparameter tuning completed successfully!")
+            print(f"📁 Best parameters saved to: output/best_params.json")
+            print(f"🎯 Final Validation R²: {final_r2:.4f}")
             
     except Exception as e:
         logger.error(f"❌ Pipeline failed: {e}")

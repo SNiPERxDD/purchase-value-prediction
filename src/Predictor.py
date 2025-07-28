@@ -561,10 +561,10 @@ def main():
                 pca = PCA(n_components=0.90, random_state=42)
                 X_tr_p = pca.fit_transform(X_tr_s)
                 _ = pca.transform(X_va_s)
-                print(f"PCA → {pca.n_components_} comps (var={pca.explained_variance_ratio_.sum():.2f})")
+                tqdm.write(f"PCA → {pca.n_components_} comps (var={pca.explained_variance_ratio_.sum():.2f})")
 
                 skb = SelectKBest(f_classif, k=min(10, len(num_cols))).fit(X_tr[num_cols], y_cls)
-                print("SelectKBest →", list(np.array(num_cols)[skb.get_support()]))
+                tqdm.write("SelectKBest → " + str(list(np.array(num_cols)[skb.get_support()])))
 
                 # Test alternative classifiers with progress
                 alt_models = [
@@ -577,7 +577,7 @@ def main():
                     try:
                         clf_alt.fit(X_tr[num_cols], y_cls)
                         acc = clf_alt.score(X_val[num_cols], (y_val>0))
-                        print(f"{name:12s} acc={acc:.4f}")
+                        tqdm.write(f"{name:12s} acc={acc:.4f}")
                     except Exception as e:
                         logger.warning(f"⚠️  {name} model failed: {e}")
                         
@@ -623,8 +623,8 @@ def main():
                         logger.warning(f"⚠️  {name} model failed: {e}")
                         r2_scores[name] = 0.0
 
-                print(f"🧪 Ridge: {r2_scores.get('Ridge', 0):.4f} | RF: {r2_scores.get('RandomForest', 0):.4f}"
-                      f" | SGD: {r2_scores.get('SGD', 0):.4f} | MLP: {r2_scores.get('MLP', 0):.4f}")
+                tqdm.write(f"🧪 Ridge: {r2_scores.get('Ridge', 0):.4f} | RF: {r2_scores.get('RandomForest', 0):.4f}"
+                           f" | SGD: {r2_scores.get('SGD', 0):.4f} | MLP: {r2_scores.get('MLP', 0):.4f}")
                 
             except Exception as e:
                 logger.warning(f"⚠️  Regression model testing failed: {e}")
@@ -673,17 +673,19 @@ def main():
                 pred_val = np.expm1(safe_predict(xgb_final, X_val, "Final XGB Regressor"))
                 y_hat = p_buy * pred_val
                 r2_final = r2_score(y_val, y_hat)
-                print(f"\n🔧 FINAL R²: {r2_final:.4f}\n")
+                
+                # Use tqdm.write() to avoid progress bar interference
+                tqdm.write(f"\n🔧 FINAL R²: {r2_final:.4f}\n")
 
-                print("💡 Key Insights:")
-                print(f"- Target skewed → log1p cap@99% = {cap:.0f}")
-                print(f"- Top 5 missing TRAIN: {list(train_miss.head(5).index) if 'train_miss' in locals() else 'N/A'}")
-                print(f"- Top 5 missing TEST : {list(test_miss.head(5).index) if 'test_miss' in locals() else 'N/A'}")
-                print(f"- Top correlates       : {top_feats}")
-                print(f"- PCA comps           : {pca.n_components_ if 'pca' in locals() else 'N/A'}")
-                print(f"- DidBuy acc          : Various models tested")
-                print(f"- Reg R² (buyers)     : {r2_scores}")
-                print(f"- Two-stage XGB R²    : {r2_final:.4f}")
+                tqdm.write("💡 Key Insights:")
+                tqdm.write(f"- Target skewed → log1p cap@99% = {cap:.0f}")
+                tqdm.write(f"- Top 5 missing TRAIN: {list(train_miss.head(5).index) if 'train_miss' in locals() else 'N/A'}")
+                tqdm.write(f"- Top 5 missing TEST : {list(test_miss.head(5).index) if 'test_miss' in locals() else 'N/A'}")
+                tqdm.write(f"- Top correlates       : {top_feats}")
+                tqdm.write(f"- PCA comps           : {pca.n_components_ if 'pca' in locals() else 'N/A'}")
+                tqdm.write(f"- DidBuy acc          : Various models tested")
+                tqdm.write(f"- Reg R² (buyers)     : {r2_scores}")
+                tqdm.write(f"- Two-stage XGB R²    : {r2_final:.4f}")
                 
             except Exception as e:
                 logger.warning(f"⚠️  Results generation failed: {e}")
@@ -719,10 +721,18 @@ def main():
                 })
                 predictions_df.to_csv('output/prediction.csv', index=False)
                 logger.info("✅ Predictions saved to output/prediction.csv")
-                logger.info("🎉 Prediction pipeline completed successfully!")
+                
+            except Exception as e:
+                raise RuntimeError(f"Final prediction generation failed: {e}")
             
-        except Exception as e:
-            raise RuntimeError(f"Final prediction generation failed: {e}")
+            # Complete the final step and close progress bar
+            pbar.update(1)
+            pbar.close()
+            
+            # Now safe to print final messages normally
+            print("🎉 Prediction pipeline completed successfully!")
+            print(f"📁 Results saved to: output/prediction.csv")
+            print(f"🎯 Final R² Score: {r2_final:.4f}")
             
     except Exception as e:
         logger.error(f"❌ Pipeline failed: {e}")
