@@ -5,6 +5,31 @@ All notable changes to the Purchase Value Prediction pipeline are documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2025-01-28
+
+### Added
+- **Enhanced Robustness & Error Handling**
+  - Improved `safe_predict()` function with explicit model type detection
+  - Flexible sample size validation with soft/hard thresholds
+  - Better logging organization with logs stored in `output/` directory
+  - Explicit `eval_metric='rmse'` for XGBRegressor early stopping
+
+### Changed
+- **Improved Model Training**
+  - Enhanced prediction type handling to avoid classifier/regressor confusion
+  - More flexible sample size requirements (soft warnings vs hard errors)
+  - Better error context and recovery strategies
+  - Organized log files in output directory structure
+
+### Fixed
+- **XGBoost Configuration**
+  - Added explicit `eval_metric` parameter for proper early stopping
+  - Fixed potential issues with `predict_proba` detection on regressors
+  - Improved model type validation in prediction functions
+  - Better handling of edge cases with small datasets
+
+---
+
 ## [1.0.1] - 2025-01-28
 
 ### Added

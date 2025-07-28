@@ -13,12 +13,16 @@ from sklearn.utils             import resample
 from sklearn.calibration       import CalibratedClassifierCV
 from xgboost                   import XGBClassifier, XGBRegressor
 
+# Ensure output directory exists before configuring logging
+output_dir = Path('output')
+output_dir.mkdir(exist_ok=True)
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('hyperparams.log'),
+        logging.FileHandler(output_dir / 'hyperparams.log'),
         logging.StreamHandler(sys.stdout)
     ]
 )
@@ -120,10 +124,11 @@ def safe_model_fit(model, X_train, y_train, X_val=None, y_val=None, model_name="
         logger.error(f"❌ {model_name} fitting failed: {e}")
         raise RuntimeError(f"{model_name} training failed: {e}")
 
-def safe_predict(model, X, model_name="Model"):
+def safe_predict(model, X, model_name="Model", prediction_type="auto"):
     """Safely make predictions with error handling"""
     try:
-        if hasattr(model, 'predict_proba'):
+        # Explicit prediction type handling
+        if prediction_type == "proba" or (prediction_type == "auto" and hasattr(model, 'predict_proba') and 'Classifier' in str(type(model))):
             return model.predict_proba(X)
         else:
             return model.predict(X)
@@ -250,8 +255,14 @@ def main():
             X = train.drop(columns=[TARGET])
             y = train[TARGET]
             
-            if len(X) < 100:
-                raise ValueError("Insufficient data for training (< 100 samples)")
+            # Flexible sample size validation
+            min_samples = 100
+            if len(X) < min_samples:
+                logger.warning(f"⚠️  Dataset has only {len(X)} samples (recommended: >{min_samples})")
+                if len(X) < 50:  # Hard minimum
+                    raise ValueError(f"Insufficient data for training ({len(X)} < 50 samples)")
+                else:
+                    logger.info("📉 Proceeding with small dataset - results may be less reliable")
             
             X_tr, X_val, y_tr, y_val = train_test_split(
                 X, y, test_size=0.2, random_state=42
@@ -370,8 +381,14 @@ def main():
             X_v_buy = X_val[y_val > 0]
             y_v_buy = np.log1p(y_val[y_val > 0])
             
-            if len(X_buy) < 50:
-                raise ValueError("Insufficient buyer samples for regression training")
+            # Flexible buyer sample size validation
+            min_buyer_samples = 50
+            if len(X_buy) < min_buyer_samples:
+                logger.warning(f"⚠️  Only {len(X_buy)} buyer samples (recommended: >{min_buyer_samples})")
+                if len(X_buy) < 20:  # Hard minimum
+                    raise ValueError(f"Insufficient buyer samples for regression ({len(X_buy)} < 20)")
+                else:
+                    logger.info("📉 Proceeding with small buyer dataset - regression may be less reliable")
             
             logger.info(f"✅ Buyer data prepared: {len(X_buy)} training, {len(X_v_buy)} validation")
             
@@ -392,7 +409,8 @@ def main():
                                 random_state=42, verbosity=0,
                                 n_estimators=1000, max_depth=6, learning_rate=0.05,
                                 subsample=subs, colsample_bytree=cols,
-                                min_child_weight=mcw
+                                min_child_weight=mcw,
+                                eval_metric='rmse'  # Explicit eval_metric for early stopping
                             )
                             m.set_params(early_stopping_rounds=early_stopping)
                             m = safe_model_fit(m, X_buy, y_buy, X_v_buy, y_v_buy, "XGB Regressor")
@@ -429,7 +447,8 @@ def main():
                                     max_depth=md, learning_rate=lr,
                                     subsample=bs, colsample_bytree=bc,
                                     min_child_weight=bm,
-                                    gamma=gamma, reg_lambda=lam
+                                    gamma=gamma, reg_lambda=lam,
+                                    eval_metric='rmse'  # Explicit eval_metric for early stopping
                                 )
                                 m.set_params(early_stopping_rounds=early_stopping)
                                 m = safe_model_fit(m, X_buy, y_buy, X_v_buy, y_v_buy, "XGB Regressor")
@@ -460,7 +479,8 @@ def main():
                 learning_rate=best_cfg[0],
                 subsample=bs, colsample_bytree=bc,
                 min_child_weight=bm,
-                gamma=best_cfg[2], reg_lambda=best_cfg[3]
+                gamma=best_cfg[2], reg_lambda=best_cfg[3],
+                eval_metric='rmse'  # Explicit eval_metric for early stopping
             )
             xgb_final.set_params(early_stopping_rounds=early_stopping)
             xgb_final = safe_model_fit(xgb_final, X_buy, y_buy, X_v_buy, y_v_buy, "Final XGB Regressor")
