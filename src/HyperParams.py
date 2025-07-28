@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import json
 from sklearn.model_selection   import train_test_split
 from sklearn.impute            import SimpleImputer
 from sklearn.preprocessing     import PolynomialFeatures
@@ -210,4 +211,57 @@ xgb_final.fit(X_buy, y_buy,
 
 pred_val = np.expm1(xgb_final.predict(X_val))
 y_hat    = p_buy * pred_val
-print("🔧 FINAL Validation R²:", r2_score(y_val, y_hat))
+final_r2 = r2_score(y_val, y_hat)
+print("🔧 FINAL Validation R²:", final_r2)
+
+# ─── 13) save best parameters to file ─────────────────────────────────
+best_params = {
+    "regressor_params": {
+        "tree_method": "hist",
+        "random_state": 42,
+        "verbosity": 0,
+        "n_estimators": 1000,
+        "max_depth": int(best_cfg[1]),
+        "learning_rate": float(best_cfg[0]),
+        "subsample": float(bs),
+        "colsample_bytree": float(bc),
+        "min_child_weight": int(bm),
+        "gamma": float(best_cfg[2]),
+        "reg_lambda": float(best_cfg[3])
+    },
+    "classifier_params": {
+        "tree_method": "hist",
+        "use_label_encoder": False,
+        "eval_metric": "logloss",
+        "random_state": 42,
+        "verbosity": 0,
+        "n_estimators": 200,
+        "max_depth": 6,
+        "learning_rate": 0.05
+    },
+    "performance": {
+        "validation_r2": float(final_r2),
+        "coarse_best_r2": float(best_r2),
+        "refined_best_r2": float(best_r2_2)
+    },
+    "tuning_info": {
+        "early_stopping_rounds": int(early_stopping),
+        "coarse_best": {
+            "subsample": float(bs),
+            "colsample_bytree": float(bc),
+            "min_child_weight": int(bm)
+        },
+        "refined_best": {
+            "learning_rate": float(best_cfg[0]),
+            "max_depth": int(best_cfg[1]),
+            "gamma": float(best_cfg[2]),
+            "reg_lambda": float(best_cfg[3])
+        }
+    }
+}
+
+# Save to output directory
+with open('output/best_params.json', 'w') as f:
+    json.dump(best_params, f, indent=2)
+
+print("✅ Best parameters saved to output/best_params.json")

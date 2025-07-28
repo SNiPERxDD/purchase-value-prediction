@@ -3,6 +3,8 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import warnings
+import json
+import os
 
 from sklearn.model_selection       import train_test_split
 from sklearn.impute                import SimpleImputer
@@ -18,7 +20,7 @@ from sklearn.decomposition          import PCA
 from sklearn.feature_selection      import SelectKBest, f_classif
 from sklearn.naive_bayes            import GaussianNB
 from sklearn.neighbors              import KNeighborsClassifier
-from sklearn.svm                    import LinearSVC
+from sklearn.svm                    import LinearSVC, SVC
 from xgboost                        import XGBClassifier, XGBRegressor
 
 # ───────────────────────────────────────────────────────────────────────────────
@@ -179,6 +181,26 @@ test  = test .reindex(columns=X_tr.columns, fill_value=0)
 
 
 # ───────────────────────────────────────────────────────────────────────────────
+# 4.5) LOAD BEST PARAMETERS (if available)
+# ───────────────────────────────────────────────────────────────────────────────
+def load_best_params():
+    """Load best parameters from hyperparameter tuning if available"""
+    params_file = 'output/best_params.json'
+    
+    if os.path.exists(params_file):
+        print("📁 Loading best parameters from hyperparameter tuning...")
+        with open(params_file, 'r') as f:
+            best_params = json.load(f)
+        print(f"✅ Loaded parameters with validation R²: {best_params['performance']['validation_r2']:.4f}")
+        return best_params
+    else:
+        print("⚠️  No best_params.json found. Using default parameters.")
+        print("   Run HyperParams.py first for optimal performance.")
+        return None
+
+best_params = load_best_params()
+
+# ───────────────────────────────────────────────────────────────────────────────
 # 5) DID-BUY CLASSIFIER
 # ───────────────────────────────────────────────────────────────────────────────
 y_cls   = (y_tr>0).astype(int)
@@ -188,12 +210,22 @@ X_up, y_up = resample(X_pos, y_pos, replace=True,
                       n_samples=len(X_neg), random_state=42)
 X_bal, y_bal = pd.concat([X_neg,X_up]), pd.concat([y_neg,y_up])
 
-clf0 = XGBClassifier(
-    tree_method='hist',
-    use_label_encoder=False, eval_metric='logloss',
-    random_state=42, verbosity=0,
-    n_estimators=200, max_depth=6, learning_rate=0.05
-)
+# Use best parameters if available, otherwise use defaults
+if best_params:
+    clf_params = best_params['classifier_params']
+else:
+    clf_params = {
+        'tree_method': 'hist',
+        'use_label_encoder': False,
+        'eval_metric': 'logloss',
+        'random_state': 42,
+        'verbosity': 0,
+        'n_estimators': 200,
+        'max_depth': 6,
+        'learning_rate': 0.05
+    }
+
+clf0 = XGBClassifier(**clf_params)
 clf0.fit(X_bal, y_bal)
 clf = CalibratedClassifierCV(clf0, cv=3).fit(X_bal, y_bal)
 p_buy = clf.predict_proba(X_val)[:,1]
@@ -253,16 +285,27 @@ print(f"🧪 Ridge: {r2_ridge:.4f} | RF: {r2_rf:.4f}"
 # ───────────────────────────────────────────────────────────────────────────────
 # 7) FINAL XGB REGRESSOR (CPU-Tuned)
 # ───────────────────────────────────────────────────────────────────────────────
-xgb_final = XGBRegressor(tree_method='hist',
-                         random_state=42, verbosity=0,
-                         n_estimators=1000,
-                         max_depth=8,
-                         learning_rate=0.1,
-                         subsample=0.6,
-                         colsample_bytree=0.8,
-                         min_child_weight=10,
-                         gamma=0,
-                         reg_lambda=10)
+# Use best parameters if available, otherwise use defaults
+if best_params:
+    reg_params = best_params['regressor_params']
+    print(f"🎯 Using optimized regressor parameters (R²: {best_params['performance']['validation_r2']:.4f})")
+else:
+    reg_params = {
+        'tree_method': 'hist',
+        'random_state': 42,
+        'verbosity': 0,
+        'n_estimators': 1000,
+        'max_depth': 8,
+        'learning_rate': 0.1,
+        'subsample': 0.6,
+        'colsample_bytree': 0.8,
+        'min_child_weight': 10,
+        'gamma': 0,
+        'reg_lambda': 10
+    }
+    print("🎯 Using default regressor parameters")
+
+xgb_final = XGBRegressor(**reg_params)
 xgb_final.set_params(early_stopping_rounds=early_stopping)
 xgb_final.fit(X_buy, y_buy,
               eval_set=[(X_v_buy,y_v_buy)],

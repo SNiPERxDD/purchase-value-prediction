@@ -61,6 +61,7 @@ purchase-value-prediction/
 ├── 📤 output/
 │   ├── sample_prediction.csv    # Sample output format (10 rows)
 │   ├── prediction.csv           # Generated predictions (not included)
+│   ├── best_params.json         # Optimized hyperparameters (from tuning)
 │   └── .gitkeep                 # Directory structure
 ├── 📋 README.md                 # Project documentation
 ├── 📊 RESULTS.md                # Detailed results analysis
@@ -116,15 +117,24 @@ pip install -r requirements.txt
 
 # Step 1: Run hyperparameter search (optional but recommended)
 python src/HyperParams.py
-
-# → Copy the best parameters into Predictor.py manually (hardcoded)
+# → Saves best parameters to output/best_params.json
 
 # Step 2: Run the prediction pipeline
 python src/Predictor.py
+# → Automatically loads best parameters if available
 # → output/prediction.csv
 ```
 
 **Performance**: ~5–10 min on modern laptop; RAM < 3 GB
+
+### **Dynamic Parameter Loading**
+The pipeline now automatically uses optimized hyperparameters:
+
+1. **HyperParams.py** saves best parameters to `output/best_params.json`
+2. **Predictor.py** automatically loads these parameters if available
+3. Falls back to sensible defaults if no tuning has been run
+
+This eliminates manual parameter copying and ensures optimal performance.
 
 ---
 
@@ -160,6 +170,7 @@ python src/Predictor.py
 ## 📊 Key Features
 
 - ✅ **Two-stage ensemble** (classifier + regressor)
+- ✅ **Dynamic parameter loading** (automatic best params from tuning)
 - ✅ **Robust missing data handling** (96%+ missing rates)
 - ✅ **CPU-optimized** implementation
 - ✅ **Production-ready** output format
