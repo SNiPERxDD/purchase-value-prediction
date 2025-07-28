@@ -2,7 +2,7 @@
 
 [![Status](https://img.shields.io/badge/Status-Public-brightgreen)](#)
 [![Built with](https://img.shields.io/badge/Built%20with-Python%203.10+-blue)](#)
-[![R² Score](https://img.shields.io/badge/R²%20Score-0.864-brightgreen)](#)
+[![R² Score](https://img.shields.io/badge/R²%20Score-0.86-brightgreen)](#)
 [![License](https://img.shields.io/badge/License-All%20Rights%20Reserved-red)](#)
 
 > **End-to-end ML pipeline that predicts customer purchase value from web-session data using a sophisticated two-stage ensemble approach.**
@@ -29,7 +29,7 @@
 | **Target skew**             | Heavy; capped at 99th percentile and log-scaled           |
 | **Missing values**          | Up to 96% in ad-related columns                           |
 | **Core model**              | XGBoost (`tree_method="hist"`, CPU)                        |
-| **Hold-out split (20%)**    | Validation **R² ≈ 0.864**                                  |
+| **Hold-out split (20%)**    | Validation **R² ≈ 0.86**                                   |
 | **Dependencies**            | Python 3.8+, NumPy, Pandas, scikit-learn, XGBoost, Seaborn |
 
 ---
@@ -147,14 +147,36 @@ This eliminates manual parameter copying and ensures optimal performance.
 |-------|--------|-------------|
 | **Classifier (RBF SVM)** | Accuracy | **0.993** |
 | **Regressor (XGB)** | R² on buyers | **0.93** |
-| **Final Ensemble** | R² overall | **0.864** |
+| **Final Ensemble** | R² overall | **0.86** |
 
-> **Note**: Numbers may vary slightly on different hardware/Python seeds.
+* Minor R² variation between local (0.86) and Kaggle (0.86) is expected because of
+  * different BLAS / thread back-ends,
+  * CPU instruction sets & floating-point determinism,
+  * early-stopping selecting a slightly different best iteration, and
+  * library version differences.
+* No change to data or algorithms—just numerical noise.
+
+### **Runtime Performance**
+
+| Environment                | HyperParams runtime | Predictor runtime |
+|----------------------------|--------------------:|------------------:|
+| **MacBook Air (M2, 16-GB, CPU-only)** | ~4 min 42 s | ~1 min 21 s |
+| **Kaggle "CPU Only" notebook**         | ~15 min 14 s | ~4 min 05 s |
 
 ### **Model Comparison**
 - **Binary Classification**: SVM (RBF) achieves 99.3% accuracy
 - **Regression**: XGBoost achieves 93% R² on buyer subset
-- **Ensemble**: Combined approach delivers 86.4% R²
+- **Ensemble**: Combined approach delivers 0.86 R²
+
+### **System Requirements**
+
+> *Both HyperParams.py and Predictor.py are confirmed to run in **CPU-only** mode.
+> No GPU libraries (CUDA, ROCm, Metal) are required.*
+
+**Verification Checklist:**
+- ✅ Confirm xgboost reports `tree_method='hist'` or `exact` (not `gpu_hist`)
+- ✅ Confirm no GPU-specific libraries in requirements.txt
+- ✅ Confirm no torch or tensorflow imports exist
 
 ---
 

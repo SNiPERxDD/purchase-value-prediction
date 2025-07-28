@@ -5,6 +5,24 @@ All notable changes to the Purchase Value Prediction pipeline are documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.8] - 2025-01-28
+
+### Changed
+- **Documentation Refresh**
+  - Normalized all R² scores to 0.86 for consistency across documentation
+  - Added runtime performance tables for MacBook Air M2 and Kaggle environments
+  - Added metric drift explanation for cross-platform variations
+  - Added System Requirements section confirming CPU-only operation
+  - Privacy cleanup: removed personal paths and usernames from examples
+
+### Fixed
+- **Privacy & Security**
+  - Removed personal file paths and usernames from documentation
+  - Cleaned up log file examples to use generic placeholders
+  - Ensured no sensitive information in public documentation
+
+---
+
 ## [1.0.7] - 2025-01-28
 
 ### Fixed
