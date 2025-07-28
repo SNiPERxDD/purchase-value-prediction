@@ -1,6 +1,101 @@
-userId,date,pageViews,totalHits,sessionNumber,trafficSource.adContent,trafficSource.adwordsClickInfo.isVideoAd,trafficSource.adwordsClickInfo.page,trafficSource.adwordsClickInfo.adNetworkType,trafficSource.adwordsClickInfo.slot
-6,20240106,4,18,1,AdE,1,2,NetworkA,SlotA
-7,20240107,7,28,2,AdF,0,1,NetworkB,SlotB
-8,20240108,5,22,1,,,2,,
-9,20240109,3,12,3,AdG,1,3,NetworkC,SlotC
-10,20240110,9,35,2,AdH,0,1,NetworkA,SlotA 
+userId,date,pageViews,totalHits,sessionNumber,trafficSource.adContent,trafficSource.adwordsClickInfo.isVideoAd,trafficSource.adwordsClickInfo.page,trafficSource.adwordsClickInfo.adNetworkType,trafficSource.adwordsClickInfo.slot,browser,deviceType,geoNetwork.region,trafficSource.medium,totals.visits
+63571,20161203,2.0,2,1,,,,,,Safari,desktop,State of Parana,referral,1
+78799,20171121,1.0,1,1,,,,,,Chrome,desktop,not available in demo dataset,organic,1
+79492,20170809,3.0,3,10,,,,,,Chrome,desktop,California,(none),1
+12037,20170501,4.0,4,1,,,,,,Firefox,desktop,not available in demo dataset,referral,1
+119712,20171108,20.0,29,1,,,,,,Chrome,desktop,Vienna,organic,1
+69357,20180305,,17,1,,,,,,Chrome,desktop,New York,(none),1
+108894,20161213,51.0,69,2,,,,,,Chrome,desktop,New York,referral,1
+66838,20170728,1.0,1,2,,,,,,Chrome,desktop,California,(none),1
+47541,20161021,1.0,1,1,,,,,,Safari,desktop,not available in demo dataset,referral,1
+3262,20180218,1.0,1,2,,,,,,Opera Mini,mobile,Dhaka Division,referral,1
+86290,20161219,14.0,16,1,,False,1.0,Google Search,Top,Chrome,desktop,California,(none),1
+57269,20161128,54.0,72,2,,,,,,Chrome,mobile,not available in demo dataset,(none),1
+46867,20180305,1.0,1,1,,,,,,Safari,desktop,not available in demo dataset,referral,1
+56430,20161226,1.0,1,1,,,,,,Firefox,desktop,not available in demo dataset,referral,1
+98503,20170210,27.0,35,63,,,,,,Chrome,desktop,Virginia,(none),1
+95599,20161215,1.0,1,1,,,,,,Chrome,desktop,not available in demo dataset,referral,1
+102252,20170913,64.0,86,13,,,,,,Chrome,desktop,California,(none),1
+107219,20170415,3.0,3,1,,,,,,Chrome,mobile,not available in demo dataset,(none),1
+109193,20161012,11.0,17,1,,,,,,Safari,mobile,not available in demo dataset,(none),1
+28286,20170410,1.0,1,1,,,,,,Chrome,desktop,not available in demo dataset,organic,1
+15923,20180222,16.0,23,3,,,,,,Chrome,desktop,Washington,(none),1
+65839,20171208,1.0,1,1,,,,,,Chrome,desktop,(not set),organic,1
+29754,20180323,25.0,35,4,Google Merchandise Collection,False,1.0,Google Search,Top,Chrome,desktop,California,cpc,1
+80114,20170705,8.0,10,2,,,,,,Chrome,desktop,not available in demo dataset,(none),1
+107485,20170601,18.0,21,2,,,,,,Firefox,desktop,not available in demo dataset,(none),1
+51729,20161102,1.0,1,1,,,,,,Chrome,desktop,not available in demo dataset,referral,1
+48941,20170221,1.0,1,99,,,,,,Chrome,desktop,not available in demo dataset,(none),1
+22202,20170709,3.0,3,4,Google Merchandise Collection,False,1.0,Google Search,Top,Chrome,mobile,New York,cpc,1
+18193,20170111,2.0,2,3,,,,,,Nintendo Browser,desktop,not available in demo dataset,cpm,1
+2828,20170203,7.0,8,2,,,,,,Chrome,desktop,California,(none),1
+60977,20180131,25.0,35,1,,,,,,Chrome,desktop,not available in demo dataset,referral,1
+22682,20161209,15.0,17,2,,,,,,Chrome,desktop,Illinois,referral,1
+14701,20161112,1.0,1,1,,,,,,Safari,desktop,not available in demo dataset,referral,1
+30761,20161211,1.0,1,1,,,,,,Chrome,mobile,not available in demo dataset,(none),1
+12088,20170511,5.0,5,1,,,,,,Chrome,desktop,not available in demo dataset,organic,1
+5883,20180131,1.0,1,15,,,,,,Chrome,desktop,Washington,organic,1
+82149,20170329,3.0,3,1,,,,,,Safari,desktop,District of Columbia,organic,1
+18637,20180314,10.0,15,1,,,,,,Chrome,desktop,Karnataka,organic,1
+18126,20161205,2.0,2,2,,,,,,Chrome,desktop,California,(none),1
+94151,20170524,6.0,6,2,,,,,,Safari,mobile,England,organic,1
+32709,20170124,2.0,2,1,,,,,,Chrome,desktop,not available in demo dataset,referral,1
+54247,20161116,1.0,1,1,,,,,,Safari,desktop,not available in demo dataset,referral,1
+70560,20170217,2.0,4,2,,,,,,Chrome,desktop,not available in demo dataset,organic,1
+27979,20170427,41.0,58,1,,,,,,Safari,mobile,Texas,organic,1
+10739,20170401,1.0,1,1,,,,,,Chrome,desktop,not available in demo dataset,referral,1
+38023,20180118,1.0,1,1,,,,,,Chrome,desktop,England,referral,1
+50323,20170120,13.0,13,3,,,,,,Safari,tablet,not available in demo dataset,organic,1
+110952,20160810,2.0,2,1,,,,,,Firefox,desktop,Stockholm County,affiliate,1
+8586,20180325,1.0,1,2,,,,,,Chrome,mobile,not available in demo dataset,organic,1
+111220,20160926,1.0,1,1,,,,,,Internet Explorer,desktop,not available in demo dataset,referral,1
+19227,20161218,36.0,44,4,,,,,,Chrome,desktop,not available in demo dataset,(none),1
+56210,20161123,3.0,3,1,,,,,,Chrome,mobile,not available in demo dataset,(none),1
+110638,20170123,1.0,1,4,,,,,,Firefox,mobile,England,(none),1
+19262,20170918,1.0,1,1,Google Merchandise Store,False,1.0,Content,RHS,Opera,mobile,(not set),cpc,1
+18267,20170727,4.0,4,2,,,,,,Chrome,desktop,California,referral,1
+68802,20180424,1.0,1,1,,,,,,Opera,desktop,not available in demo dataset,referral,1
+103869,20180102,18.0,22,2,,,,,,Chrome,desktop,New York,(none),1
+46257,20170221,1.0,1,21,,,,,,Chrome,desktop,not available in demo dataset,referral,1
+78565,20170617,6.0,6,2,,,,,,Chrome,mobile,not available in demo dataset,(none),1
+47685,20161216,24.0,29,2,,,,,,Chrome,desktop,California,referral,1
+80669,20160916,2.0,2,1,,,,,,Chrome,desktop,not available in demo dataset,referral,1
+87649,20180116,1.0,1,1,,,,,,Chrome,desktop,not available in demo dataset,organic,1
+28919,20160930,3.0,3,1,,,,,,Safari,mobile,not available in demo dataset,(none),1
+53552,20170628,6.0,6,1,,,,,,Chrome,desktop,California,organic,1
+13128,20160927,2.0,2,1,,,,,,Safari,desktop,Telangana,referral,1
+73613,20171122,3.0,6,1,,,,,,Chrome,mobile,not available in demo dataset,organic,1
+110567,20161215,22.0,28,7,,,,,,Chrome,desktop,Ontario,referral,1
+104028,20170210,19.0,23,2,,,,,,Chrome,desktop,California,(none),1
+85112,20170213,3.0,3,1,,,,,,Internet Explorer,desktop,not available in demo dataset,organic,1
+89556,20160826,31.0,35,1,,,,,,Chrome,mobile,not available in demo dataset,organic,1
+108070,20170221,1.0,1,1,,,,,,Chrome,desktop,New York,(none),1
+107410,20170108,28.0,42,1,,,,,,Chrome,desktop,not available in demo dataset,referral,1
+60507,20160928,1.0,1,1,,,,,,Safari,desktop,not available in demo dataset,referral,1
+23720,20180402,1.0,1,2,,,,,,Android Webview,mobile,California,(none),1
+58022,20171110,3.0,3,1,,,,,,Firefox,desktop,Madrid,referral,1
+22786,20180215,1.0,1,2,,,,,,Chrome,desktop,not available in demo dataset,(none),1
+1041,20180214,1.0,1,1,,,,,,Chrome,desktop,County Dublin,organic,1
+65512,20170501,16.0,18,1,,,,,,Chrome,desktop,California,referral,1
+88773,20161108,25.0,32,3,,,,,,Chrome,desktop,not available in demo dataset,(none),1
+26685,20170429,1.0,1,1,,,,,,Internet Explorer,desktop,not available in demo dataset,referral,1
+4536,20161116,31.0,39,1,,,,,,Chrome,desktop,California,referral,1
+80596,20160905,2.0,2,1,,,,,,Chrome,desktop,State of Sao Paulo,organic,1
+91470,20161122,1.0,1,1,,,,,,Safari,mobile,not available in demo dataset,organic,1
+23062,20171203,1.0,1,6,,,,,,Chrome,desktop,not available in demo dataset,referral,1
+108287,20160811,7.0,9,1,,,,,,Safari,mobile,not available in demo dataset,(none),1
+90209,20160929,1.0,1,2,,,,,,Chrome,desktop,not available in demo dataset,organic,1
+97335,20161028,2.0,2,1,,,,,,Safari,desktop,not available in demo dataset,referral,1
+13595,20170731,33.0,49,3,,,,,,Chrome,desktop,California,(none),1
+33190,20171103,2.0,2,1,,,,,,Safari,mobile,not available in demo dataset,organic,1
+80980,20161228,5.0,5,3,,,,,,Chrome,desktop,not available in demo dataset,(none),1
+27490,20161011,28.0,36,1,,,,,,Chrome,desktop,New York,referral,1
+18054,20170428,1.0,1,1,,,,,,Chrome,desktop,Kyiv city,affiliate,1
+116713,20160827,10.0,12,2,,,,,,Chrome,desktop,not available in demo dataset,(none),1
+93865,20161105,1.0,1,1,,False,1.0,Google Search,Top,Safari,desktop,not available in demo dataset,cpc,1
+70675,20180318,17.0,25,2,,,,,,Chrome,desktop,California,(none),1
+42703,20171021,1.0,1,1,Google Merchandise Store,False,1.0,Content,RHS,UC Browser,mobile,not available in demo dataset,cpc,1
+121814,20170718,2.0,3,1,,,,,,Safari,mobile,not available in demo dataset,organic,1
+12416,20161212,13.0,16,3,,,,,,Chrome,desktop,California,referral,1
+17238,20170517,4.0,4,1,,,,,,Safari,desktop,Illinois,organic,1
+6012,20161010,1.0,1,1,,,,,,Chrome,mobile,(not set),organic,1
