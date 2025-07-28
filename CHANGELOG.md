@@ -161,7 +161,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - **Improved Portability**
-  - Removed hardcoded `/kaggle/input/mlcpdata2/` paths
+  - Removed hardcoded paths for better environment independence
   - Pipeline now works in any environment without path modifications
   - Enhanced file discovery with recursive search patterns
 
