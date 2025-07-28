@@ -5,6 +5,24 @@ All notable changes to the Purchase Value Prediction pipeline are documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.7] - 2025-01-28
+
+### Fixed
+- **Logging System Issues**
+  - Fixed empty log files (hyperparams.log, predictor.log) by improving logging configuration
+  - Resolved logging handler conflicts that prevented file output
+  - Added explicit logging setup with proper file and console handlers
+  - Used `mode='w'` to ensure log files are created fresh on each run
+
+### Changed
+- **Enhanced Logging Configuration**
+  - Replaced `logging.basicConfig()` with custom `setup_logging()` function
+  - Clear existing handlers before configuring new ones to avoid conflicts
+  - Explicit formatter and handler configuration for better reliability
+  - Both console and file logging now work consistently
+
+---
+
 ## [1.0.6] - 2025-01-28
 
 ### Fixed

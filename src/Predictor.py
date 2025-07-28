@@ -31,16 +31,34 @@ from xgboost                        import XGBClassifier, XGBRegressor
 output_dir = Path('output')
 output_dir.mkdir(exist_ok=True)
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler(output_dir / 'predictor.log'),
-        logging.StreamHandler(sys.stdout)
-    ]
-)
-logger = logging.getLogger(__name__)
+# Configure logging with explicit file handling
+def setup_logging():
+    """Setup logging configuration with file and console output"""
+    # Clear any existing handlers to avoid conflicts
+    logging.getLogger().handlers.clear()
+    
+    # Create formatter
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    
+    # Create file handler
+    file_handler = logging.FileHandler(output_dir / 'predictor.log', mode='w')
+    file_handler.setLevel(logging.INFO)
+    file_handler.setFormatter(formatter)
+    
+    # Create console handler
+    console_handler = logging.StreamHandler(sys.stdout)
+    console_handler.setLevel(logging.INFO)
+    console_handler.setFormatter(formatter)
+    
+    # Configure root logger
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
+    root_logger.addHandler(file_handler)
+    root_logger.addHandler(console_handler)
+    
+    return root_logger
+
+logger = setup_logging()
 
 def find_data_files():
     """Dynamically find train_data.csv and test_data.csv in various locations"""
