@@ -185,7 +185,6 @@ def main():
         # Find and validate data files
         train_path, test_path = find_data_files()
         validate_data_files(train_path, test_path)
-        ensure_output_directory()
         
         # ───────────────────────────────────────────────────────────────────────────────
         # 1) LOAD & QUICK EDA (train + test)
@@ -212,7 +211,7 @@ def main():
             print("Top 5 missing in TRAIN (%):")
             print(train_miss.head(5).round(2))
 
-            print("\\n=== TEST DATASET SHAPE ===", test.shape)
+            print("\n=== TEST DATASET SHAPE ===", test.shape)
             test_miss = test.isnull().mean().mul(100).sort_values(ascending=False)
             print("Top 5 missing in TEST (%):")
             print(test_miss.head(5).round(2))
@@ -231,15 +230,14 @@ def main():
             
             cap = np.nanpercentile(purchase, 99)
             
-            safe_visualization(
-                lambda: (
-                    plt.figure(figsize=(6,4)),
-                    sns.histplot(purchase.clip(upper=cap), bins=30, kde=False),
-                    plt.title(f'PurchaseValue (capped at {cap:.0f})'),
-                    plt.tight_layout(),
-                    plt.show()
-                )
-            )
+            def create_target_histogram():
+                plt.figure(figsize=(6,4))
+                sns.histplot(purchase.clip(upper=cap), bins=30, kde=False)
+                plt.title(f'PurchaseValue (capped at {cap:.0f})')
+                plt.tight_layout()
+                plt.show()
+            
+            safe_visualization(create_target_histogram)
 
             # top numeric correlations + heatmap
             num_df = train.select_dtypes(include='number')
@@ -256,15 +254,14 @@ def main():
                 print("Top numeric correlates:", top_feats)
 
                 mask = corr.isnull()
-                safe_visualization(
-                    lambda: (
-                        plt.figure(figsize=(10,8)),
-                        sns.heatmap(corr, mask=mask, cmap='coolwarm', center=0),
-                        plt.title('Numeric Feature Correlation'),
-                        plt.tight_layout(),
-                        plt.show()
-                    )
-                )
+                def create_correlation_heatmap():
+                    plt.figure(figsize=(10,8))
+                    sns.heatmap(corr, mask=mask, cmap='coolwarm', center=0)
+                    plt.title('Numeric Feature Correlation')
+                    plt.tight_layout()
+                    plt.show()
+                
+                safe_visualization(create_correlation_heatmap)
             else:
                 logger.warning("⚠️  Insufficient numeric columns for correlation analysis")
                 top_feats = []
@@ -315,18 +312,20 @@ def main():
                     sess = train.groupby('userId').size().rename('u_sess_count').reset_index()
                     um = train.groupby('userId')[TARGET].mean().rename('u_mean_purchase').reset_index()
 
-                    train = train.merge(agg, on='userId', how='left')\\
-                                 .merge(sess, on='userId', how='left')\\
-                                 .merge(um, on='userId', how='left')
+                    train = (train
+                             .merge(agg, on='userId', how='left')
+                             .merge(sess, on='userId', how='left')
+                             .merge(um, on='userId', how='left'))
                     train.fillna({
                         'u_pg_mean':0, 'u_pg_sum':0, 'u_pg_max':0,
                         'u_sess_count':0,
                         'u_mean_purchase':train[TARGET].mean()
                     }, inplace=True)
 
-                    test = test.merge(agg, on='userId', how='left')\\
-                               .merge(sess, on='userId', how='left')\\
-                               .merge(um, on='userId', how='left')
+                    test = (test
+                            .merge(agg, on='userId', how='left')
+                            .merge(sess, on='userId', how='left')
+                            .merge(um, on='userId', how='left'))
                     test.fillna({
                         'u_pg_mean':0, 'u_pg_sum':0, 'u_pg_max':0,
                         'u_sess_count':0,
@@ -585,7 +584,7 @@ def main():
             pred_val = np.expm1(safe_predict(xgb_final, X_val, "Final XGB Regressor"))
             y_hat = p_buy * pred_val
             r2_final = r2_score(y_val, y_hat)
-            print(f"\\n🔧 FINAL R²: {r2_final:.4f}\\n")
+            print(f"\n🔧 FINAL R²: {r2_final:.4f}\n")
 
             print("💡 Key Insights:")
             print(f"- Target skewed → log1p cap@99% = {cap:.0f}")

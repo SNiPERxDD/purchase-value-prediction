@@ -5,6 +5,25 @@ All notable changes to the Purchase Value Prediction pipeline are documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2025-01-28
+
+### Fixed
+- **Syntax and Code Quality Issues**
+  - Fixed broken line continuations in pandas `.merge()` chains (replaced `\\` with proper parentheses)
+  - Corrected string escaping issues (`\\n` → `\n` for proper newlines)
+  - Improved `safe_visualization()` functions to avoid tuple return issues
+  - Removed duplicate `ensure_output_directory()` calls for cleaner code
+  - Enhanced variable scope handling in results generation
+
+### Changed
+- **Code Structure Improvements**
+  - Refactored visualization functions for better readability and maintainability
+  - Streamlined directory creation logic to avoid redundancy
+  - Improved error handling in visualization blocks
+  - Better separation of concerns in data processing chains
+
+---
+
 ## [1.0.2] - 2025-01-28
 
 ### Added

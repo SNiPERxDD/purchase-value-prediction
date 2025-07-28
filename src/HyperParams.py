@@ -144,7 +144,6 @@ def main():
         # Find and validate data files
         train_path, test_path = find_data_files()
         validate_data_files(train_path, test_path)
-        ensure_output_directory()
         
         # ─── 1) load & clean ─────────────────────────────────────────────────
         logger.info("📊 Loading datasets...")
