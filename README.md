@@ -173,11 +173,6 @@ This eliminates manual parameter copying and ensures optimal performance.
 > *Both HyperParams.py and Predictor.py are confirmed to run in **CPU-only** mode.
 > No GPU libraries (CUDA, ROCm, Metal) are required.*
 
-**Verification Checklist:**
-- ✅ Confirm xgboost reports `tree_method='hist'` or `exact` (not `gpu_hist`)
-- ✅ Confirm no GPU-specific libraries in requirements.txt
-- ✅ Confirm no torch or tensorflow imports exist
-
 ---
 
 ## 7. Next Steps (not done yet)
@@ -194,7 +189,7 @@ This eliminates manual parameter copying and ensures optimal performance.
 
 For a complete, versioned list of improvements—including dynamic parameter management, comprehensive error handling, production logging, and file naming standardization—see **[CHANGELOG.md](./CHANGELOG.md)**.
 
-**Latest Release: v1.0.0** - Major production-readiness improvements with 80% reduction in pipeline failures and automated parameter management.
+**Latest Release: v1.0.8** - Documentation refresh with normalized metrics, privacy cleanup, and CPU-only verification.
 
 ---
 
