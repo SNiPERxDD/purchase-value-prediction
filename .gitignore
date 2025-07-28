@@ -1,11 +1,13 @@
-# Output files
-# output/*.json
+# Output files - ignore all generated files but keep samples and structure
+output/*.json
 output/*.pkl
 output/*.joblib
+output/prediction.csv
+output/hyperparams.log
+output/predictor.log
 
 # Keep output directory and sample files
 !output/.gitkeep
-output/prediction.csv
 !output/sample_prediction.csv
 
 # Python
