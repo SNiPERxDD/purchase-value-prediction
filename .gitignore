@@ -1,13 +1,13 @@
 # Output files
 # output/*.csv  # <-- Commented out to allow submission.csv
-output/*.json
+# output/*.json
 output/*.pkl
 output/*.joblib
 
 # Keep output directory and sample files
 !output/.gitkeep
-output/submission.csv
-!output/sample_submission.csv
+output/prediction.csv
+!output/sample_prediction.csv
 
 # Python
 __pycache__/
