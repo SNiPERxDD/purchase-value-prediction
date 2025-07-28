@@ -111,7 +111,8 @@ cd purchase-value-prediction
 pip install -r requirements.txt
 
 # Add your data files
-# Place train_data.csv and test_data.csv in ./data/ folder
+# Place train_data.csv and test_data.csv in the project root or ./data/ folder
+# The pipeline will automatically find them
 
 # Run the pipeline
 

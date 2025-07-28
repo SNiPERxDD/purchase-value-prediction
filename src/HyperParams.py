@@ -24,12 +24,48 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def validate_data_files():
+def find_data_files():
+    """Dynamically find train_data.csv and test_data.csv in the project directory"""
+    project_root = Path.cwd()
+    
+    # Search patterns for data files
+    train_patterns = ['train_data.csv', '**/train_data.csv']
+    test_patterns = ['test_data.csv', '**/test_data.csv']
+    
+    train_file = None
+    test_file = None
+    
+    # Search for training data
+    for pattern in train_patterns:
+        matches = list(project_root.glob(pattern))
+        if matches:
+            train_file = matches[0]  # Take first match
+            break
+    
+    # Search for test data
+    for pattern in test_patterns:
+        matches = list(project_root.glob(pattern))
+        if matches:
+            test_file = matches[0]  # Take first match
+            break
+    
+    if not train_file:
+        raise FileNotFoundError(
+            "train_data.csv not found in project directory. "
+            "Please ensure the file exists in the project root or data/ subdirectory."
+        )
+    
+    if not test_file:
+        raise FileNotFoundError(
+            "test_data.csv not found in project directory. "
+            "Please ensure the file exists in the project root or data/ subdirectory."
+        )
+    
+    return str(train_file), str(test_file)
+
+def validate_data_files(train_path, test_path):
     """Validate that required data files exist and are readable"""
-    required_files = [
-        '/kaggle/input/mlcpdata2/train_data.csv',
-        '/kaggle/input/mlcpdata2/test_data.csv'
-    ]
+    required_files = [train_path, test_path]
     
     for file_path in required_files:
         if not os.path.exists(file_path):
@@ -100,15 +136,18 @@ def main():
     try:
         logger.info("🚀 Starting hyperparameter tuning pipeline...")
         
-        # Validate environment
-        validate_data_files()
+        # Find and validate data files
+        train_path, test_path = find_data_files()
+        validate_data_files(train_path, test_path)
         ensure_output_directory()
         
         # ─── 1) load & clean ─────────────────────────────────────────────────
         logger.info("📊 Loading datasets...")
         try:
-            train = pd.read_csv('/kaggle/input/mlcpdata2/train_data.csv')
-            test = pd.read_csv('/kaggle/input/mlcpdata2/test_data.csv')
+            train = pd.read_csv(train_path)
+            test = pd.read_csv(test_path)
+            logger.info(f"✅ Loaded training data from: {train_path}")
+            logger.info(f"✅ Loaded test data from: {test_path}")
         except Exception as e:
             raise IOError(f"Failed to load CSV files: {e}")
         

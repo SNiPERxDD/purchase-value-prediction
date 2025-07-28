@@ -5,6 +5,29 @@ All notable changes to the Purchase Value Prediction pipeline are documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2025-01-28
+
+### Added
+- **Dynamic Data File Discovery**
+  - Automatic search for `train_data.csv` and `test_data.csv` in project directory
+  - Supports files in project root or `data/` subdirectory
+  - Eliminates hardcoded Kaggle paths for better portability
+  - Clear error messages when data files are not found
+
+### Changed
+- **Improved Portability**
+  - Removed hardcoded `/kaggle/input/mlcpdata2/` paths
+  - Pipeline now works in any environment without path modifications
+  - Enhanced file discovery with recursive search patterns
+
+### Fixed
+- **Environment Independence**
+  - Pipeline no longer requires specific directory structure
+  - Works on local machines, cloud environments, and containers
+  - Automatic adaptation to different project layouts
+
+---
+
 ## [1.0.0] - 2025-01-28
 
 ### Added
