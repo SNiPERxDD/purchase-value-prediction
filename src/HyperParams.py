@@ -5,6 +5,7 @@ import os
 import sys
 import logging
 from pathlib import Path
+from tqdm import tqdm
 from sklearn.model_selection   import train_test_split
 from sklearn.impute            import SimpleImputer
 from sklearn.preprocessing     import PolynomialFeatures
@@ -137,13 +138,28 @@ def safe_predict(model, X, model_name="Model", prediction_type="auto"):
         raise RuntimeError(f"{model_name} prediction failed: {e}")
 
 def main():
-    """Main hyperparameter tuning pipeline with comprehensive error handling"""
+    """Main hyperparameter tuning pipeline with comprehensive error handling and progress tracking"""
     try:
-        logger.info("🚀 Starting hyperparameter tuning pipeline...")
+        # Initialize overall progress bar
+        overall_steps = [
+            "Loading & Validating Data",
+            "Feature Engineering", 
+            "Data Preprocessing",
+            "Binary Classifier Training",
+            "Coarse Hyperparameter Tuning",
+            "Refined Hyperparameter Tuning",
+            "Final Model Training",
+            "Saving Best Parameters"
+        ]
         
-        # Find and validate data files
-        train_path, test_path = find_data_files()
-        validate_data_files(train_path, test_path)
+        with tqdm(total=len(overall_steps), desc="🚀 Hyperparameter Tuning Progress", unit="step", colour="blue") as pbar:
+            logger.info("🚀 Starting hyperparameter tuning pipeline...")
+            
+            # Step 1: Find and validate data files
+            pbar.set_description("📁 Loading & Validating Data")
+            train_path, test_path = find_data_files()
+            validate_data_files(train_path, test_path)
+            pbar.update(1)
         
         # ─── 1) load & clean ─────────────────────────────────────────────────
         logger.info("📊 Loading datasets...")
@@ -394,78 +410,87 @@ def main():
         except Exception as e:
             raise ValueError(f"Buyer data preparation failed: {e}")
 
-        # ─── 10) coarse tune (CPU-only) ───────────────────────────────────────
-        logger.info("🔍 Starting coarse hyperparameter tuning...")
-        try:
-            best_r2, (bs, bc, bm) = -np.inf, (0.8, 0.8, 10)
-            
-            for subs in [0.6, 0.8, 1.0]:
-                for cols in [0.6, 0.8, 1.0]:
-                    for mcw in [1, 5, 10]:
-                        try:
-                            m = XGBRegressor(
-                                tree_method='hist',
-                                random_state=42, verbosity=0,
-                                n_estimators=1000, max_depth=6, learning_rate=0.05,
-                                subsample=subs, colsample_bytree=cols,
-                                min_child_weight=mcw,
-                                eval_metric='rmse'  # Explicit eval_metric for early stopping
-                            )
-                            m.set_params(early_stopping_rounds=early_stopping)
-                            m = safe_model_fit(m, X_buy, y_buy, X_v_buy, y_v_buy, "XGB Regressor")
+            # Step 5: Coarse Hyperparameter Tuning
+            pbar.set_description("🔍 Coarse Hyperparameter Tuning")
+            logger.info("🔍 Starting coarse hyperparameter tuning...")
+            try:
+                best_r2, (bs, bc, bm) = -np.inf, (0.8, 0.8, 10)
+                
+                # Create parameter combinations for progress tracking
+                coarse_params = [(subs, cols, mcw) for subs in [0.6, 0.8, 1.0] 
+                                for cols in [0.6, 0.8, 1.0] for mcw in [1, 5, 10]]
+                
+                for subs, cols, mcw in tqdm(coarse_params, desc="Coarse tuning", leave=False):
+                    try:
+                        m = XGBRegressor(
+                            tree_method='hist',
+                            random_state=42, verbosity=0,
+                            n_estimators=1000, max_depth=6, learning_rate=0.05,
+                            subsample=subs, colsample_bytree=cols,
+                            min_child_weight=mcw,
+                            eval_metric='rmse'  # Explicit eval_metric for early stopping
+                        )
+                        m.set_params(early_stopping_rounds=early_stopping)
+                        m = safe_model_fit(m, X_buy, y_buy, X_v_buy, y_v_buy, "XGB Regressor")
+                        
+                        pred = np.expm1(safe_predict(m, X_val, "XGB Regressor"))
+                        r = r2_score(y_val, p_buy * pred)
+                        
+                        if r > best_r2:
+                            best_r2, (bs, bc, bm) = r, (subs, cols, mcw)
                             
-                            pred = np.expm1(safe_predict(m, X_val, "XGB Regressor"))
-                            r = r2_score(y_val, p_buy * pred)
+                    except Exception as e:
+                        logger.warning(f"⚠️  Coarse tuning iteration failed: {e}")
+                        continue
+
+                logger.info(f"Coarse Best → subs={bs}, col={bc}, mcw={bm} → R²={best_r2:.4f}")
+                
+            except Exception as e:
+                raise RuntimeError(f"Coarse hyperparameter tuning failed: {e}")
+            
+            pbar.update(1)
+
+            # Step 6: Refined Hyperparameter Tuning
+            pbar.set_description("🎯 Refined Hyperparameter Tuning")
+            logger.info("🎯 Starting refined hyperparameter tuning...")
+            try:
+                best_r2_2, best_cfg = best_r2, (0.05, 6, 0, 1)
+                
+                # Create parameter combinations for progress tracking
+                refined_params = [(lr, md, gamma, lam) for lr in [0.01, 0.03, 0.05, 0.1]
+                                 for md in [6, 8, 10] for gamma in [0, 1, 5] for lam in [0, 1, 5, 10]]
+                
+                for lr, md, gamma, lam in tqdm(refined_params, desc="Refined tuning", leave=False):
+                    try:
+                        m = XGBRegressor(
+                            tree_method='hist',
+                            random_state=42, verbosity=0,
+                            n_estimators=1000,
+                            max_depth=md, learning_rate=lr,
+                            subsample=bs, colsample_bytree=bc,
+                            min_child_weight=bm,
+                            gamma=gamma, reg_lambda=lam,
+                            eval_metric='rmse'  # Explicit eval_metric for early stopping
+                        )
+                        m.set_params(early_stopping_rounds=early_stopping)
+                        m = safe_model_fit(m, X_buy, y_buy, X_v_buy, y_v_buy, "XGB Regressor")
+                        
+                        pred = np.expm1(safe_predict(m, X_val, "XGB Regressor"))
+                        r = r2_score(y_val, p_buy * pred)
+                        
+                        if r > best_r2_2:
+                            best_r2_2, best_cfg = r, (lr, md, gamma, lam)
                             
-                            if r > best_r2:
-                                best_r2, (bs, bc, bm) = r, (subs, cols, mcw)
-                                
-                        except Exception as e:
-                            logger.warning(f"⚠️  Coarse tuning iteration failed: {e}")
-                            continue
+                    except Exception as e:
+                        logger.warning(f"⚠️  Refined tuning iteration failed: {e}")
+                        continue
 
-            logger.info(f"Coarse Best → subs={bs}, col={bc}, mcw={bm} → R²={best_r2:.4f}")
+                logger.info(f"Refine Best → lr={best_cfg[0]}, depth={best_cfg[1]}, gamma={best_cfg[2]}, lambda={best_cfg[3]} → R²={best_r2_2:.4f}")
+                
+            except Exception as e:
+                raise RuntimeError(f"Refined hyperparameter tuning failed: {e}")
             
-        except Exception as e:
-            raise RuntimeError(f"Coarse hyperparameter tuning failed: {e}")
-
-        # ─── 11) refine tune: lr, depth, gamma, reg_lambda ────────────────────
-        logger.info("🎯 Starting refined hyperparameter tuning...")
-        try:
-            best_r2_2, best_cfg = best_r2, (0.05, 6, 0, 1)
-            
-            for lr in [0.01, 0.03, 0.05, 0.1]:
-                for md in [6, 8, 10]:
-                    for gamma in [0, 1, 5]:
-                        for lam in [0, 1, 5, 10]:
-                            try:
-                                m = XGBRegressor(
-                                    tree_method='hist',
-                                    random_state=42, verbosity=0,
-                                    n_estimators=1000,
-                                    max_depth=md, learning_rate=lr,
-                                    subsample=bs, colsample_bytree=bc,
-                                    min_child_weight=bm,
-                                    gamma=gamma, reg_lambda=lam,
-                                    eval_metric='rmse'  # Explicit eval_metric for early stopping
-                                )
-                                m.set_params(early_stopping_rounds=early_stopping)
-                                m = safe_model_fit(m, X_buy, y_buy, X_v_buy, y_v_buy, "XGB Regressor")
-                                
-                                pred = np.expm1(safe_predict(m, X_val, "XGB Regressor"))
-                                r = r2_score(y_val, p_buy * pred)
-                                
-                                if r > best_r2_2:
-                                    best_r2_2, best_cfg = r, (lr, md, gamma, lam)
-                                    
-                            except Exception as e:
-                                logger.warning(f"⚠️  Refined tuning iteration failed: {e}")
-                                continue
-
-            logger.info(f"Refine Best → lr={best_cfg[0]}, depth={best_cfg[1]}, gamma={best_cfg[2]}, lambda={best_cfg[3]} → R²={best_r2_2:.4f}")
-            
-        except Exception as e:
-            raise RuntimeError(f"Refined hyperparameter tuning failed: {e}")
+            pbar.update(1)
 
         # ─── 12) final fit & report ───────────────────────────────────────────
         logger.info("🏁 Final model training...")

@@ -5,6 +5,28 @@ All notable changes to the Purchase Value Prediction pipeline are documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.4] - 2025-01-28
+
+### Added
+- **Comprehensive Progress Tracking**
+  - Added `tqdm` progress bars for overall pipeline progress in both scripts
+  - Step-by-step progress indicators with descriptive labels
+  - Nested progress bars for hyperparameter tuning loops (27 coarse + 480 refined combinations)
+  - Progress tracking for model testing phases (alternative classifiers, regression models)
+  - Visual feedback for long-running operations to prevent "stuck" concerns
+
+### Changed
+- **Enhanced User Experience**
+  - Real-time progress visibility for all major pipeline steps
+  - Color-coded progress bars (green for Predictor, blue for HyperParams)
+  - Detailed step descriptions showing current operation
+  - Better feedback for users during long training sessions
+
+### Dependencies
+- **Added tqdm>=4.64.0** to requirements.txt for progress bar functionality
+
+---
+
 ## [1.0.3] - 2025-01-28
 
 ### Fixed

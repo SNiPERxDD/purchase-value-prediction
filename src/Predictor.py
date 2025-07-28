@@ -8,6 +8,7 @@ import os
 import sys
 import logging
 from pathlib import Path
+from tqdm import tqdm
 
 from sklearn.model_selection       import train_test_split
 from sklearn.impute                import SimpleImputer
@@ -178,458 +179,479 @@ def safe_visualization(func, *args, **kwargs):
         logger.warning(f"⚠️  Visualization failed: {e}")
 
 def main():
-    """Main prediction pipeline with comprehensive error handling"""
+    """Main prediction pipeline with comprehensive error handling and progress tracking"""
     try:
-        logger.info("🚀 Starting prediction pipeline...")
+        # Initialize overall progress bar
+        overall_steps = [
+            "Loading & Validating Data",
+            "Data Quality Analysis", 
+            "Feature Engineering",
+            "Data Preprocessing",
+            "Binary Classifier Training",
+            "Additional Model Analysis",
+            "Regression Model Testing",
+            "Final XGB Training",
+            "Results Generation",
+            "Final Predictions"
+        ]
         
-        # Find and validate data files
-        train_path, test_path = find_data_files()
-        validate_data_files(train_path, test_path)
-        
-        # ───────────────────────────────────────────────────────────────────────────────
-        # 1) LOAD & QUICK EDA (train + test)
-        # ───────────────────────────────────────────────────────────────────────────────
-        logger.info("📊 Loading datasets...")
-        try:
-            train = pd.read_csv(train_path)
-            test = pd.read_csv(test_path)
-            logger.info(f"✅ Loaded training data from: {train_path}")
-            logger.info(f"✅ Loaded test data from: {test_path}")
-        except Exception as e:
-            raise IOError(f"Failed to load CSV files: {e}")
-        
-        TARGET = 'purchaseValue'
-        
-        # Validate loaded data
-        validate_dataframe(train, "Training data", [TARGET])
-        validate_dataframe(test, "Test data")
-        
-        logger.info("📈 Analyzing data quality...")
-        try:
-            print("=== TRAIN DATASET SHAPE ===", train.shape)
-            train_miss = train.isnull().mean().mul(100).sort_values(ascending=False)
-            print("Top 5 missing in TRAIN (%):")
-            print(train_miss.head(5).round(2))
-
-            print("\n=== TEST DATASET SHAPE ===", test.shape)
-            test_miss = test.isnull().mean().mul(100).sort_values(ascending=False)
-            print("Top 5 missing in TEST (%):")
-            print(test_miss.head(5).round(2))
-        except Exception as e:
-            logger.warning(f"⚠️  Data quality analysis failed: {e}")
-
-        # suppress seaborn FutureWarning
-        warnings.filterwarnings("ignore", category=FutureWarning, module="seaborn")
-
-        logger.info("📊 Creating visualizations...")
-        try:
-            # train target distribution
-            purchase = train[TARGET].dropna()
-            if len(purchase) == 0:
-                raise ValueError("No valid target values found")
+        with tqdm(total=len(overall_steps), desc="🚀 Pipeline Progress", unit="step", colour="green") as pbar:
+            logger.info("🚀 Starting prediction pipeline...")
             
-            cap = np.nanpercentile(purchase, 99)
+            # Step 1: Find and validate data files
+            pbar.set_description("📁 Loading & Validating Data")
+            train_path, test_path = find_data_files()
+            validate_data_files(train_path, test_path)
+            pbar.update(1)
+        
+            # Step 2: Data Quality Analysis
+            pbar.set_description("📈 Data Quality Analysis")
+            logger.info("📊 Loading datasets...")
+            try:
+                train = pd.read_csv(train_path)
+                test = pd.read_csv(test_path)
+                logger.info(f"✅ Loaded training data from: {train_path}")
+                logger.info(f"✅ Loaded test data from: {test_path}")
+            except Exception as e:
+                raise IOError(f"Failed to load CSV files: {e}")
             
-            def create_target_histogram():
-                plt.figure(figsize=(6,4))
-                sns.histplot(purchase.clip(upper=cap), bins=30, kde=False)
-                plt.title(f'PurchaseValue (capped at {cap:.0f})')
-                plt.tight_layout()
-                plt.show()
+            TARGET = 'purchaseValue'
             
-            safe_visualization(create_target_histogram)
+            # Validate loaded data
+            validate_dataframe(train, "Training data", [TARGET])
+            validate_dataframe(test, "Test data")
+            
+            logger.info("📈 Analyzing data quality...")
+            try:
+                print("=== TRAIN DATASET SHAPE ===", train.shape)
+                train_miss = train.isnull().mean().mul(100).sort_values(ascending=False)
+                print("Top 5 missing in TRAIN (%):")
+                print(train_miss.head(5).round(2))
 
-            # top numeric correlations + heatmap
-            num_df = train.select_dtypes(include='number')
-            if len(num_df.columns) > 1:
-                corr = num_df.corr()
-                top_feats = (
-                    corr[TARGET]
-                      .drop(TARGET)
-                      .abs()
-                      .nlargest(4)
-                      .index
-                      .tolist()
-                )
-                print("Top numeric correlates:", top_feats)
+                print("\n=== TEST DATASET SHAPE ===", test.shape)
+                test_miss = test.isnull().mean().mul(100).sort_values(ascending=False)
+                print("Top 5 missing in TEST (%):")
+                print(test_miss.head(5).round(2))
+            except Exception as e:
+                logger.warning(f"⚠️  Data quality analysis failed: {e}")
 
-                mask = corr.isnull()
-                def create_correlation_heatmap():
-                    plt.figure(figsize=(10,8))
-                    sns.heatmap(corr, mask=mask, cmap='coolwarm', center=0)
-                    plt.title('Numeric Feature Correlation')
+            # suppress seaborn FutureWarning
+            warnings.filterwarnings("ignore", category=FutureWarning, module="seaborn")
+
+            logger.info("📊 Creating visualizations...")
+            try:
+                # train target distribution
+                purchase = train[TARGET].dropna()
+                if len(purchase) == 0:
+                    raise ValueError("No valid target values found")
+                
+                cap = np.nanpercentile(purchase, 99)
+                
+                def create_target_histogram():
+                    plt.figure(figsize=(6,4))
+                    sns.histplot(purchase.clip(upper=cap), bins=30, kde=False)
+                    plt.title(f'PurchaseValue (capped at {cap:.0f})')
                     plt.tight_layout()
                     plt.show()
                 
-                safe_visualization(create_correlation_heatmap)
-            else:
-                logger.warning("⚠️  Insufficient numeric columns for correlation analysis")
-                top_feats = []
-                
-        except Exception as e:
-            logger.warning(f"⚠️  Visualization creation failed: {e}")
-            top_feats = []
-            cap = 0
+                safe_visualization(create_target_histogram)
 
-        # ───────────────────────────────────────────────────────────────────────────────
-        # 2) CLEANING & FEATURE ENGINEERING
-        # ───────────────────────────────────────────────────────────────────────────────
-        logger.info("🧹 Cleaning and engineering features...")
-        try:
-            # Data cleaning
-            initial_shape = train.shape
-            train.drop_duplicates(inplace=True)
-            logger.info(f"Removed {initial_shape[0] - train.shape[0]} duplicate rows")
-            
-            const = [c for c in train.columns if train[c].nunique(dropna=False) <= 1]
-            if const:
-                logger.info(f"Removing {len(const)} constant columns")
-                train.drop(columns=const, inplace=True)
-                test.drop(columns=[c for c in const if c in test.columns], inplace=True)
-
-            # date features
-            if 'date' in train.columns:
-                try:
-                    for df in (train, test):
-                        df['date'] = pd.to_datetime(df['date'], format='%Y%m%d', errors='coerce')
-                        df['month'] = df['date'].dt.month
-                        df['weekday'] = df['date'].dt.dayofweek
-                        df['is_weekend'] = (df['weekday']>=5).astype(int)
-                        df.drop(columns='date', inplace=True)
-                    logger.info("✅ Date features created")
-                except Exception as e:
-                    logger.warning(f"⚠️  Date feature processing failed: {e}")
-
-            # per-user aggregates
-            if 'userId' in train.columns and 'pageViews' in train.columns:
-                try:
-                    agg = (
-                        train.groupby('userId')['pageViews']
-                             .agg(['mean','sum','max'])
-                             .add_prefix('u_pg_')
-                             .reset_index()
+                # top numeric correlations + heatmap
+                num_df = train.select_dtypes(include='number')
+                if len(num_df.columns) > 1:
+                    corr = num_df.corr()
+                    top_feats = (
+                        corr[TARGET]
+                          .drop(TARGET)
+                          .abs()
+                          .nlargest(4)
+                          .index
+                          .tolist()
                     )
-                    sess = train.groupby('userId').size().rename('u_sess_count').reset_index()
-                    um = train.groupby('userId')[TARGET].mean().rename('u_mean_purchase').reset_index()
+                    print("Top numeric correlates:", top_feats)
 
-                    train = (train
-                             .merge(agg, on='userId', how='left')
-                             .merge(sess, on='userId', how='left')
-                             .merge(um, on='userId', how='left'))
-                    train.fillna({
-                        'u_pg_mean':0, 'u_pg_sum':0, 'u_pg_max':0,
-                        'u_sess_count':0,
-                        'u_mean_purchase':train[TARGET].mean()
-                    }, inplace=True)
-
-                    test = (test
-                            .merge(agg, on='userId', how='left')
-                            .merge(sess, on='userId', how='left')
-                            .merge(um, on='userId', how='left'))
-                    test.fillna({
-                        'u_pg_mean':0, 'u_pg_sum':0, 'u_pg_max':0,
-                        'u_sess_count':0,
-                        'u_mean_purchase':train[TARGET].mean()
-                    }, inplace=True)
-
-                    train.drop(columns='userId', inplace=True)
-                    test.drop(columns='userId', inplace=True)
-                    logger.info("✅ User aggregates created")
-                except Exception as e:
-                    logger.warning(f"⚠️  User aggregate processing failed: {e}")
+                    mask = corr.isnull()
+                    def create_correlation_heatmap():
+                        plt.figure(figsize=(10,8))
+                        sns.heatmap(corr, mask=mask, cmap='coolwarm', center=0)
+                        plt.title('Numeric Feature Correlation')
+                        plt.tight_layout()
+                        plt.show()
                     
-        except Exception as e:
-            raise ValueError(f"Feature engineering failed: {e}")
-
-        # ───────────────────────────────────────────────────────────────────────────────
-        # 3) SPLIT
-        # ───────────────────────────────────────────────────────────────────────────────
-        logger.info("🔀 Splitting data...")
-        try:
-            X = train.drop(columns=[TARGET])
-            y = train[TARGET]
-            
-            # Flexible sample size validation
-            min_samples = 100
-            if len(X) < min_samples:
-                logger.warning(f"⚠️  Dataset has only {len(X)} samples (recommended: >{min_samples})")
-                if len(X) < 50:  # Hard minimum
-                    raise ValueError(f"Insufficient data for training ({len(X)} < 50 samples)")
+                    safe_visualization(create_correlation_heatmap)
                 else:
-                    logger.info("📉 Proceeding with small dataset - results may be less reliable")
-            
-            X_tr, X_val, y_tr, y_val = train_test_split(
-                X, y, test_size=0.2, random_state=42
-            )
-            for df in (X_tr, X_val, y_tr, y_val):
-                df.index = range(len(df))
-            
-            early_stopping = max(10, int(0.05*(y_val>0).sum()))
-            logger.info(f"✅ Data split complete. Early stopping: {early_stopping}")
-            
-        except Exception as e:
-            raise ValueError(f"Data splitting failed: {e}")
-
-        # ───────────────────────────────────────────────────────────────────────────────
-        # 4) PREPROCESSING PIPELINE
-        # ───────────────────────────────────────────────────────────────────────────────
-        logger.info("🔧 Preprocessing features...")
-        try:
-            num_cols = X_tr.select_dtypes(include='number').columns.tolist()
-            if len(num_cols) == 0:
-                raise ValueError("No numeric columns found")
-            
-            pipeline = Pipeline([
-                ('impute', SimpleImputer(strategy='median')),
-                ('log', FunctionTransformer(np.log1p, validate=True))
-            ])
-            X_tr[num_cols] = pipeline.fit_transform(X_tr[num_cols])
-            X_val[num_cols] = pipeline.transform(X_val[num_cols])
-            test[num_cols] = pipeline.transform(test[num_cols])
-
-            cat_cols = X_tr.select_dtypes(exclude='number').columns.tolist()
-            gmean = y_tr.mean()
-            for c in cat_cols:
-                means = y_tr.groupby(X_tr[c]).mean()
-                for df in (X_tr, X_val, test):
-                    df[c] = df[c].map(means).fillna(gmean)
-
-            # interactions on top5
-            top5 = num_cols[:5] if len(num_cols) >= 5 else num_cols
-            poly = PolynomialFeatures(2, interaction_only=True, include_bias=False)
-            X_tr_int = poly.fit_transform(X_tr[top5])
-            X_val_int = poly.transform(X_val[top5])
-            test_int = poly.transform(test[top5])
-
-            X_tr = pd.concat([
-                X_tr.drop(columns=top5).reset_index(drop=True),
-                pd.DataFrame(X_tr_int, columns=poly.get_feature_names_out(top5))
-            ], axis=1)
-            X_val = pd.concat([
-                X_val.drop(columns=top5).reset_index(drop=True),
-                pd.DataFrame(X_val_int, columns=poly.get_feature_names_out(top5))
-            ], axis=1)
-            test = pd.concat([
-                test.drop(columns=top5).reset_index(drop=True),
-                pd.DataFrame(test_int, columns=poly.get_feature_names_out(top5))
-            ], axis=1)
-
-            X_val = X_val.reindex(columns=X_tr.columns, fill_value=0)
-            test = test.reindex(columns=X_tr.columns, fill_value=0)
-            logger.info(f"✅ Preprocessing complete. Final features: {X_tr.shape[1]}")
-            
-        except Exception as e:
-            raise ValueError(f"Preprocessing failed: {e}")
-
-        # ───────────────────────────────────────────────────────────────────────────────
-        # 4.5) LOAD BEST PARAMETERS (if available)
-        # ───────────────────────────────────────────────────────────────────────────────
-        best_params = load_best_params()
-
-        # ───────────────────────────────────────────────────────────────────────────────
-        # 5) DID-BUY CLASSIFIER
-        # ───────────────────────────────────────────────────────────────────────────────
-        logger.info("🎯 Training binary classifier...")
-        try:
-            y_cls = (y_tr>0).astype(int)
-            X_pos = X_tr[y_cls==1]; y_pos = y_cls[y_cls==1]
-            X_neg = X_tr[y_cls==0]; y_neg = y_cls[y_cls==0]
-            
-            if len(X_pos) == 0 or len(X_neg) == 0:
-                raise ValueError("Insufficient positive or negative samples")
-            
-            X_up, y_up = resample(X_pos, y_pos, replace=True,
-                                  n_samples=len(X_neg), random_state=42)
-            X_bal, y_bal = pd.concat([X_neg,X_up]), pd.concat([y_neg,y_up])
-
-            # Use best parameters if available, otherwise use defaults
-            if best_params:
-                clf_params = best_params['classifier_params']
-            else:
-                clf_params = {
-                    'tree_method': 'hist',
-                    'use_label_encoder': False,
-                    'eval_metric': 'logloss',
-                    'random_state': 42,
-                    'verbosity': 0,
-                    'n_estimators': 200,
-                    'max_depth': 6,
-                    'learning_rate': 0.05
-                }
-
-            clf0 = XGBClassifier(**clf_params)
-            clf0 = safe_model_fit(clf0, X_bal, y_bal, model_name="XGB Classifier")
-            clf = CalibratedClassifierCV(clf0, cv=3).fit(X_bal, y_bal)
-            p_buy = safe_predict(clf, X_val, "Calibrated Classifier")[:,1]
-            logger.info("✅ Binary classifier trained successfully")
-            
-        except Exception as e:
-            raise RuntimeError(f"Binary classifier training failed: {e}")
-
-        # ───────────────────────────────────────────────────────────────────────────────
-        # 5b) Milestone 3: PCA / SelectKBest + NB, KNN, SVM(rbf)
-        # ───────────────────────────────────────────────────────────────────────────────
-        logger.info("🔬 Running additional model analysis...")
-        try:
-            scaler = StandardScaler().fit(X_tr[num_cols])
-            X_tr_s = scaler.transform(X_tr[num_cols])
-            X_va_s = scaler.transform(X_val[num_cols])
-
-            pca = PCA(n_components=0.90, random_state=42)
-            X_tr_p = pca.fit_transform(X_tr_s)
-            _ = pca.transform(X_va_s)
-            print(f"PCA → {pca.n_components_} comps (var={pca.explained_variance_ratio_.sum():.2f})")
-
-            skb = SelectKBest(f_classif, k=min(10, len(num_cols))).fit(X_tr[num_cols], y_cls)
-            print("SelectKBest →", list(np.array(num_cols)[skb.get_support()]))
-
-            for name, clf_alt in [
-                ("GaussianNB", GaussianNB()),
-                ("KNeighbors", KNeighborsClassifier()),
-                ("SVM (rbf)", SVC(kernel='rbf', C=1.0, gamma='scale', probability=True, random_state=42))
-            ]:
-                try:
-                    clf_alt.fit(X_tr[num_cols], y_cls)
-                    acc = clf_alt.score(X_val[num_cols], (y_val>0))
-                    print(f"{name:12s} acc={acc:.4f}")
-                except Exception as e:
-                    logger.warning(f"⚠️  {name} model failed: {e}")
+                    logger.warning("⚠️  Insufficient numeric columns for correlation analysis")
+                    top_feats = []
                     
-        except Exception as e:
-            logger.warning(f"⚠️  Additional model analysis failed: {e}")
-
-        # ───────────────────────────────────────────────────────────────────────────────
-        # 6) REGRESSION ON BUYERS
-        # ───────────────────────────────────────────────────────────────────────────────
-        logger.info("💰 Training regression models...")
-        try:
-            mask_buy = y_tr>0
-            X_buy = X_tr[mask_buy]
-            y_buy = np.log1p(y_tr[mask_buy])
-            X_v_buy = X_val[y_val>0]
-            y_v_buy = np.log1p(y_val[y_val>0])
+            except Exception as e:
+                logger.warning(f"⚠️  Visualization creation failed: {e}")
+                top_feats = []
+                cap = 0
             
-            # Flexible buyer sample size validation
-            min_buyer_samples = 50
-            if len(X_buy) < min_buyer_samples:
-                logger.warning(f"⚠️  Only {len(X_buy)} buyer samples (recommended: >{min_buyer_samples})")
-                if len(X_buy) < 20:  # Hard minimum
-                    raise ValueError(f"Insufficient buyer samples for regression ({len(X_buy)} < 20)")
+            pbar.update(1)
+
+            # Step 3: Feature Engineering
+            pbar.set_description("🧹 Feature Engineering")
+            logger.info("🧹 Cleaning and engineering features...")
+            try:
+                # Data cleaning
+                initial_shape = train.shape
+                train.drop_duplicates(inplace=True)
+                logger.info(f"Removed {initial_shape[0] - train.shape[0]} duplicate rows")
+                
+                const = [c for c in train.columns if train[c].nunique(dropna=False) <= 1]
+                if const:
+                    logger.info(f"Removing {len(const)} constant columns")
+                    train.drop(columns=const, inplace=True)
+                    test.drop(columns=[c for c in const if c in test.columns], inplace=True)
+
+                # date features
+                if 'date' in train.columns:
+                    try:
+                        for df in (train, test):
+                            df['date'] = pd.to_datetime(df['date'], format='%Y%m%d', errors='coerce')
+                            df['month'] = df['date'].dt.month
+                            df['weekday'] = df['date'].dt.dayofweek
+                            df['is_weekend'] = (df['weekday']>=5).astype(int)
+                            df.drop(columns='date', inplace=True)
+                        logger.info("✅ Date features created")
+                    except Exception as e:
+                        logger.warning(f"⚠️  Date feature processing failed: {e}")
+
+                # per-user aggregates
+                if 'userId' in train.columns and 'pageViews' in train.columns:
+                    try:
+                        agg = (
+                            train.groupby('userId')['pageViews']
+                                 .agg(['mean','sum','max'])
+                                 .add_prefix('u_pg_')
+                                 .reset_index()
+                        )
+                        sess = train.groupby('userId').size().rename('u_sess_count').reset_index()
+                        um = train.groupby('userId')[TARGET].mean().rename('u_mean_purchase').reset_index()
+
+                        train = (train
+                                 .merge(agg, on='userId', how='left')
+                                 .merge(sess, on='userId', how='left')
+                                 .merge(um, on='userId', how='left'))
+                        train.fillna({
+                            'u_pg_mean':0, 'u_pg_sum':0, 'u_pg_max':0,
+                            'u_sess_count':0,
+                            'u_mean_purchase':train[TARGET].mean()
+                        }, inplace=True)
+
+                        test = (test
+                                .merge(agg, on='userId', how='left')
+                                .merge(sess, on='userId', how='left')
+                                .merge(um, on='userId', how='left'))
+                        test.fillna({
+                            'u_pg_mean':0, 'u_pg_sum':0, 'u_pg_max':0,
+                            'u_sess_count':0,
+                            'u_mean_purchase':train[TARGET].mean()
+                        }, inplace=True)
+
+                        train.drop(columns='userId', inplace=True)
+                        test.drop(columns='userId', inplace=True)
+                        logger.info("✅ User aggregates created")
+                    except Exception as e:
+                        logger.warning(f"⚠️  User aggregate processing failed: {e}")
+                        
+            except Exception as e:
+                raise ValueError(f"Feature engineering failed: {e}")
+            
+            pbar.update(1)
+
+            # Step 4: Data Preprocessing
+            pbar.set_description("🔧 Data Preprocessing")
+            logger.info("🔀 Splitting data...")
+            try:
+                X = train.drop(columns=[TARGET])
+                y = train[TARGET]
+                
+                # Flexible sample size validation
+                min_samples = 100
+                if len(X) < min_samples:
+                    logger.warning(f"⚠️  Dataset has only {len(X)} samples (recommended: >{min_samples})")
+                    if len(X) < 50:  # Hard minimum
+                        raise ValueError(f"Insufficient data for training ({len(X)} < 50 samples)")
+                    else:
+                        logger.info("📉 Proceeding with small dataset - results may be less reliable")
+                
+                X_tr, X_val, y_tr, y_val = train_test_split(
+                    X, y, test_size=0.2, random_state=42
+                )
+                for df in (X_tr, X_val, y_tr, y_val):
+                    df.index = range(len(df))
+                
+                early_stopping = max(10, int(0.05*(y_val>0).sum()))
+                logger.info(f"✅ Data split complete. Early stopping: {early_stopping}")
+                
+            except Exception as e:
+                raise ValueError(f"Data splitting failed: {e}")
+
+            logger.info("🔧 Preprocessing features...")
+            try:
+                num_cols = X_tr.select_dtypes(include='number').columns.tolist()
+                if len(num_cols) == 0:
+                    raise ValueError("No numeric columns found")
+                
+                pipeline = Pipeline([
+                    ('impute', SimpleImputer(strategy='median')),
+                    ('log', FunctionTransformer(np.log1p, validate=True))
+                ])
+                X_tr[num_cols] = pipeline.fit_transform(X_tr[num_cols])
+                X_val[num_cols] = pipeline.transform(X_val[num_cols])
+                test[num_cols] = pipeline.transform(test[num_cols])
+
+                cat_cols = X_tr.select_dtypes(exclude='number').columns.tolist()
+                gmean = y_tr.mean()
+                for c in cat_cols:
+                    means = y_tr.groupby(X_tr[c]).mean()
+                    for df in (X_tr, X_val, test):
+                        df[c] = df[c].map(means).fillna(gmean)
+
+                # interactions on top5
+                top5 = num_cols[:5] if len(num_cols) >= 5 else num_cols
+                poly = PolynomialFeatures(2, interaction_only=True, include_bias=False)
+                X_tr_int = poly.fit_transform(X_tr[top5])
+                X_val_int = poly.transform(X_val[top5])
+                test_int = poly.transform(test[top5])
+
+                X_tr = pd.concat([
+                    X_tr.drop(columns=top5).reset_index(drop=True),
+                    pd.DataFrame(X_tr_int, columns=poly.get_feature_names_out(top5))
+                ], axis=1)
+                X_val = pd.concat([
+                    X_val.drop(columns=top5).reset_index(drop=True),
+                    pd.DataFrame(X_val_int, columns=poly.get_feature_names_out(top5))
+                ], axis=1)
+                test = pd.concat([
+                    test.drop(columns=top5).reset_index(drop=True),
+                    pd.DataFrame(test_int, columns=poly.get_feature_names_out(top5))
+                ], axis=1)
+
+                X_val = X_val.reindex(columns=X_tr.columns, fill_value=0)
+                test = test.reindex(columns=X_tr.columns, fill_value=0)
+                logger.info(f"✅ Preprocessing complete. Final features: {X_tr.shape[1]}")
+                
+            except Exception as e:
+                raise ValueError(f"Preprocessing failed: {e}")
+
+            # Load best parameters
+            best_params = load_best_params()
+            pbar.update(1)
+
+            # Step 5: Binary Classifier Training
+            pbar.set_description("🎯 Binary Classifier Training")
+            logger.info("🎯 Training binary classifier...")
+            try:
+                y_cls = (y_tr>0).astype(int)
+                X_pos = X_tr[y_cls==1]; y_pos = y_cls[y_cls==1]
+                X_neg = X_tr[y_cls==0]; y_neg = y_cls[y_cls==0]
+                
+                if len(X_pos) == 0 or len(X_neg) == 0:
+                    raise ValueError("Insufficient positive or negative samples")
+                
+                X_up, y_up = resample(X_pos, y_pos, replace=True,
+                                      n_samples=len(X_neg), random_state=42)
+                X_bal, y_bal = pd.concat([X_neg,X_up]), pd.concat([y_neg,y_up])
+
+                # Use best parameters if available, otherwise use defaults
+                if best_params:
+                    clf_params = best_params['classifier_params']
                 else:
-                    logger.info("📉 Proceeding with small buyer dataset - regression may be less reliable")
+                    clf_params = {
+                        'tree_method': 'hist',
+                        'use_label_encoder': False,
+                        'eval_metric': 'logloss',
+                        'random_state': 42,
+                        'verbosity': 0,
+                        'n_estimators': 200,
+                        'max_depth': 6,
+                        'learning_rate': 0.05
+                    }
 
-            # Test multiple regression models
-            models_to_test = [
-                ("Ridge", Ridge(solver='svd')),
-                ("RandomForest", RandomForestRegressor(random_state=42)),
-                ("SGD", make_pipeline(StandardScaler(), SGDRegressor(max_iter=2000, tol=1e-3, random_state=42))),
-                ("MLP", make_pipeline(StandardScaler(), MLPRegressor(max_iter=500, hidden_layer_sizes=(100,50), random_state=42)))
-            ]
+                clf0 = XGBClassifier(**clf_params)
+                clf0 = safe_model_fit(clf0, X_bal, y_bal, model_name="XGB Classifier")
+                clf = CalibratedClassifierCV(clf0, cv=3).fit(X_bal, y_bal)
+                p_buy = safe_predict(clf, X_val, "Calibrated Classifier")[:,1]
+                logger.info("✅ Binary classifier trained successfully")
+                
+            except Exception as e:
+                raise RuntimeError(f"Binary classifier training failed: {e}")
             
-            r2_scores = {}
-            for name, model in models_to_test:
-                try:
-                    model.fit(X_buy, y_buy)
-                    pred = model.predict(X_v_buy)
-                    r2_scores[name] = r2_score(y_v_buy, pred)
-                except Exception as e:
-                    logger.warning(f"⚠️  {name} model failed: {e}")
-                    r2_scores[name] = 0.0
+            pbar.update(1)
 
-            print(f"🧪 Ridge: {r2_scores.get('Ridge', 0):.4f} | RF: {r2_scores.get('RandomForest', 0):.4f}"
-                  f" | SGD: {r2_scores.get('SGD', 0):.4f} | MLP: {r2_scores.get('MLP', 0):.4f}")
+            # Step 6: Additional Model Analysis
+            pbar.set_description("🔬 Additional Model Analysis")
+            logger.info("🔬 Running additional model analysis...")
+            try:
+                scaler = StandardScaler().fit(X_tr[num_cols])
+                X_tr_s = scaler.transform(X_tr[num_cols])
+                X_va_s = scaler.transform(X_val[num_cols])
+
+                pca = PCA(n_components=0.90, random_state=42)
+                X_tr_p = pca.fit_transform(X_tr_s)
+                _ = pca.transform(X_va_s)
+                print(f"PCA → {pca.n_components_} comps (var={pca.explained_variance_ratio_.sum():.2f})")
+
+                skb = SelectKBest(f_classif, k=min(10, len(num_cols))).fit(X_tr[num_cols], y_cls)
+                print("SelectKBest →", list(np.array(num_cols)[skb.get_support()]))
+
+                # Test alternative classifiers with progress
+                alt_models = [
+                    ("GaussianNB", GaussianNB()),
+                    ("KNeighbors", KNeighborsClassifier()),
+                    ("SVM (rbf)", SVC(kernel='rbf', C=1.0, gamma='scale', probability=True, random_state=42))
+                ]
+                
+                for name, clf_alt in tqdm(alt_models, desc="Testing alternative classifiers", leave=False):
+                    try:
+                        clf_alt.fit(X_tr[num_cols], y_cls)
+                        acc = clf_alt.score(X_val[num_cols], (y_val>0))
+                        print(f"{name:12s} acc={acc:.4f}")
+                    except Exception as e:
+                        logger.warning(f"⚠️  {name} model failed: {e}")
+                        
+            except Exception as e:
+                logger.warning(f"⚠️  Additional model analysis failed: {e}")
             
-        except Exception as e:
-            logger.warning(f"⚠️  Regression model testing failed: {e}")
-            r2_scores = {}
+            pbar.update(1)
 
-        # ───────────────────────────────────────────────────────────────────────────────
-        # 7) FINAL XGB REGRESSOR (CPU-Tuned)
-        # ───────────────────────────────────────────────────────────────────────────────
-        logger.info("🎯 Training final XGB regressor...")
-        try:
-            # Use best parameters if available, otherwise use defaults
-            if best_params:
-                reg_params = best_params['regressor_params']
-                print(f"🎯 Using optimized regressor parameters (R²: {best_params['performance']['validation_r2']:.4f})")
-            else:
-                reg_params = {
-                    'tree_method': 'hist',
-                    'random_state': 42,
-                    'verbosity': 0,
-                    'n_estimators': 1000,
-                    'max_depth': 8,
-                    'learning_rate': 0.1,
-                    'subsample': 0.6,
-                    'colsample_bytree': 0.8,
-                    'min_child_weight': 10,
-                    'gamma': 0,
-                    'reg_lambda': 10
-                }
-                print("🎯 Using default regressor parameters")
+            # Step 7: Regression Model Testing
+            pbar.set_description("💰 Regression Model Testing")
+            logger.info("💰 Training regression models...")
+            try:
+                mask_buy = y_tr>0
+                X_buy = X_tr[mask_buy]
+                y_buy = np.log1p(y_tr[mask_buy])
+                X_v_buy = X_val[y_val>0]
+                y_v_buy = np.log1p(y_val[y_val>0])
+                
+                # Flexible buyer sample size validation
+                min_buyer_samples = 50
+                if len(X_buy) < min_buyer_samples:
+                    logger.warning(f"⚠️  Only {len(X_buy)} buyer samples (recommended: >{min_buyer_samples})")
+                    if len(X_buy) < 20:  # Hard minimum
+                        raise ValueError(f"Insufficient buyer samples for regression ({len(X_buy)} < 20)")
+                    else:
+                        logger.info("📉 Proceeding with small buyer dataset - regression may be less reliable")
 
-            xgb_final = XGBRegressor(**reg_params)
-            xgb_final.set_params(early_stopping_rounds=early_stopping)
-            xgb_final = safe_model_fit(xgb_final, X_buy, y_buy, X_v_buy, y_v_buy, "Final XGB Regressor")
-            logger.info("✅ Final XGB regressor trained successfully")
+                # Test multiple regression models with progress
+                models_to_test = [
+                    ("Ridge", Ridge(solver='svd')),
+                    ("RandomForest", RandomForestRegressor(random_state=42)),
+                    ("SGD", make_pipeline(StandardScaler(), SGDRegressor(max_iter=2000, tol=1e-3, random_state=42))),
+                    ("MLP", make_pipeline(StandardScaler(), MLPRegressor(max_iter=500, hidden_layer_sizes=(100,50), random_state=42)))
+                ]
+                
+                r2_scores = {}
+                for name, model in tqdm(models_to_test, desc="Testing regression models", leave=False):
+                    try:
+                        model.fit(X_buy, y_buy)
+                        pred = model.predict(X_v_buy)
+                        r2_scores[name] = r2_score(y_v_buy, pred)
+                    except Exception as e:
+                        logger.warning(f"⚠️  {name} model failed: {e}")
+                        r2_scores[name] = 0.0
+
+                print(f"🧪 Ridge: {r2_scores.get('Ridge', 0):.4f} | RF: {r2_scores.get('RandomForest', 0):.4f}"
+                      f" | SGD: {r2_scores.get('SGD', 0):.4f} | MLP: {r2_scores.get('MLP', 0):.4f}")
+                
+            except Exception as e:
+                logger.warning(f"⚠️  Regression model testing failed: {e}")
+                r2_scores = {}
             
-        except Exception as e:
-            raise RuntimeError(f"Final XGB regressor training failed: {e}")
+            pbar.update(1)
 
-        # ───────────────────────────────────────────────────────────────────────────────
-        # 8) FINAL VALIDATION & INSIGHTS
-        # ───────────────────────────────────────────────────────────────────────────────
-        logger.info("📊 Generating final results...")
-        try:
-            pred_val = np.expm1(safe_predict(xgb_final, X_val, "Final XGB Regressor"))
-            y_hat = p_buy * pred_val
-            r2_final = r2_score(y_val, y_hat)
-            print(f"\n🔧 FINAL R²: {r2_final:.4f}\n")
+            # Step 8: Final XGB Training
+            pbar.set_description("🎯 Final XGB Training")
+            logger.info("🎯 Training final XGB regressor...")
+            try:
+                # Use best parameters if available, otherwise use defaults
+                if best_params:
+                    reg_params = best_params['regressor_params']
+                    print(f"🎯 Using optimized regressor parameters (R²: {best_params['performance']['validation_r2']:.4f})")
+                else:
+                    reg_params = {
+                        'tree_method': 'hist',
+                        'random_state': 42,
+                        'verbosity': 0,
+                        'n_estimators': 1000,
+                        'max_depth': 8,
+                        'learning_rate': 0.1,
+                        'subsample': 0.6,
+                        'colsample_bytree': 0.8,
+                        'min_child_weight': 10,
+                        'gamma': 0,
+                        'reg_lambda': 10
+                    }
+                    print("🎯 Using default regressor parameters")
 
-            print("💡 Key Insights:")
-            print(f"- Target skewed → log1p cap@99% = {cap:.0f}")
-            print(f"- Top 5 missing TRAIN: {list(train_miss.head(5).index) if 'train_miss' in locals() else 'N/A'}")
-            print(f"- Top 5 missing TEST : {list(test_miss.head(5).index) if 'test_miss' in locals() else 'N/A'}")
-            print(f"- Top correlates       : {top_feats}")
-            print(f"- PCA comps           : {pca.n_components_ if 'pca' in locals() else 'N/A'}")
-            print(f"- DidBuy acc          : Various models tested")
-            print(f"- Reg R² (buyers)     : {r2_scores}")
-            print(f"- Two-stage XGB R²    : {r2_final:.4f}")
+                xgb_final = XGBRegressor(**reg_params)
+                xgb_final.set_params(early_stopping_rounds=early_stopping)
+                xgb_final = safe_model_fit(xgb_final, X_buy, y_buy, X_v_buy, y_v_buy, "Final XGB Regressor")
+                logger.info("✅ Final XGB regressor trained successfully")
+                
+            except Exception as e:
+                raise RuntimeError(f"Final XGB regressor training failed: {e}")
             
-        except Exception as e:
-            logger.warning(f"⚠️  Results generation failed: {e}")
-            r2_final = 0.0
+            pbar.update(1)
 
-        # ───────────────────────────────────────────────────────────────────────────────
-        # 9) REFIT & PREDICTION
-        # ───────────────────────────────────────────────────────────────────────────────
-        logger.info("🔄 Refitting on full data and generating predictions...")
-        try:
-            # Refit classifier on full data
-            clf.fit(pd.concat([X_tr,X_val]), (pd.concat([y_tr,y_val])>0).astype(int))
+            # Step 9: Results Generation
+            pbar.set_description("📊 Results Generation")
+            logger.info("📊 Generating final results...")
+            try:
+                pred_val = np.expm1(safe_predict(xgb_final, X_val, "Final XGB Regressor"))
+                y_hat = p_buy * pred_val
+                r2_final = r2_score(y_val, y_hat)
+                print(f"\n🔧 FINAL R²: {r2_final:.4f}\n")
+
+                print("💡 Key Insights:")
+                print(f"- Target skewed → log1p cap@99% = {cap:.0f}")
+                print(f"- Top 5 missing TRAIN: {list(train_miss.head(5).index) if 'train_miss' in locals() else 'N/A'}")
+                print(f"- Top 5 missing TEST : {list(test_miss.head(5).index) if 'test_miss' in locals() else 'N/A'}")
+                print(f"- Top correlates       : {top_feats}")
+                print(f"- PCA comps           : {pca.n_components_ if 'pca' in locals() else 'N/A'}")
+                print(f"- DidBuy acc          : Various models tested")
+                print(f"- Reg R² (buyers)     : {r2_scores}")
+                print(f"- Two-stage XGB R²    : {r2_final:.4f}")
+                
+            except Exception as e:
+                logger.warning(f"⚠️  Results generation failed: {e}")
+                r2_final = 0.0
             
-            # Refit regressor on full buyer data
-            X_full = pd.concat([X_tr,X_val])
-            y_full = pd.concat([y_tr,y_val])
-            mask_f = y_full>0
-            X_bf = X_full[mask_f]
-            y_bf = np.log1p(y_full[mask_f])
+            pbar.update(1)
 
-            xgb_final.set_params(early_stopping_rounds=None)
-            xgb_final = safe_model_fit(xgb_final, X_bf, y_bf, model_name="Final Refitted XGB")
+            # Step 10: Final Predictions
+            pbar.set_description("🔄 Final Predictions")
+            logger.info("🔄 Refitting on full data and generating predictions...")
+            try:
+                # Refit classifier on full data
+                clf.fit(pd.concat([X_tr,X_val]), (pd.concat([y_tr,y_val])>0).astype(int))
+                
+                # Refit regressor on full buyer data
+                X_full = pd.concat([X_tr,X_val])
+                y_full = pd.concat([y_tr,y_val])
+                mask_f = y_full>0
+                X_bf = X_full[mask_f]
+                y_bf = np.log1p(y_full[mask_f])
 
-            # Generate test predictions
-            p_buy_te = safe_predict(clf, test, "Final Classifier")[:,1]
-            pred_te = np.expm1(safe_predict(xgb_final, test, "Final Regressor"))
-            
-            # Save predictions
-            predictions_df = pd.DataFrame({
-                'id': np.arange(len(test)),
-                'purchaseValue': p_buy_te * pred_te
-            })
-            predictions_df.to_csv('output/prediction.csv', index=False)
-            logger.info("✅ Predictions saved to output/prediction.csv")
-            logger.info("🎉 Prediction pipeline completed successfully!")
+                xgb_final.set_params(early_stopping_rounds=None)
+                xgb_final = safe_model_fit(xgb_final, X_bf, y_bf, model_name="Final Refitted XGB")
+
+                # Generate test predictions
+                p_buy_te = safe_predict(clf, test, "Final Classifier")[:,1]
+                pred_te = np.expm1(safe_predict(xgb_final, test, "Final Regressor"))
+                
+                # Save predictions
+                predictions_df = pd.DataFrame({
+                    'id': np.arange(len(test)),
+                    'purchaseValue': p_buy_te * pred_te
+                })
+                predictions_df.to_csv('output/prediction.csv', index=False)
+                logger.info("✅ Predictions saved to output/prediction.csv")
+                logger.info("🎉 Prediction pipeline completed successfully!")
             
         except Exception as e:
             raise RuntimeError(f"Final prediction generation failed: {e}")
