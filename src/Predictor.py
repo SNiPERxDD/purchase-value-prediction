@@ -43,40 +43,108 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def find_data_files():
-    """Dynamically find train_data.csv and test_data.csv in the project directory"""
+    """Dynamically find train_data.csv and test_data.csv in various locations"""
     project_root = Path.cwd()
     
-    # Search patterns for data files
-    train_patterns = ['train_data.csv', '**/train_data.csv']
-    test_patterns = ['test_data.csv', '**/test_data.csv']
+    # Extended search patterns for different environments
+    train_patterns = [
+        'train_data.csv',
+        '**/train_data.csv',
+        '/kaggle/input/*/train_data.csv',
+        '/kaggle/input/*/*/train_data.csv',
+        '../input/*/train_data.csv',
+        '../input/*/*/train_data.csv',
+        'data/train_data.csv',
+        './data/train_data.csv'
+    ]
+    
+    test_patterns = [
+        'test_data.csv',
+        '**/test_data.csv', 
+        '/kaggle/input/*/test_data.csv',
+        '/kaggle/input/*/*/test_data.csv',
+        '../input/*/test_data.csv',
+        '../input/*/*/test_data.csv',
+        'data/test_data.csv',
+        './data/test_data.csv'
+    ]
     
     train_file = None
     test_file = None
     
+    logger.info(f"🔍 Searching for data files from: {project_root}")
+    
     # Search for training data
     for pattern in train_patterns:
-        matches = list(project_root.glob(pattern))
-        if matches:
-            train_file = matches[0]  # Take first match
-            break
+        try:
+            if pattern.startswith('/') or pattern.startswith('../'):
+                # Absolute or relative paths
+                matches = list(Path('/').glob(pattern.lstrip('/'))) if pattern.startswith('/') else list(Path('.').glob(pattern))
+            else:
+                # Relative to project root
+                matches = list(project_root.glob(pattern))
+            
+            if matches:
+                train_file = matches[0]
+                logger.info(f"✅ Found training data: {train_file}")
+                break
+        except Exception as e:
+            logger.debug(f"Pattern {pattern} failed: {e}")
+            continue
     
     # Search for test data
     for pattern in test_patterns:
-        matches = list(project_root.glob(pattern))
-        if matches:
-            test_file = matches[0]  # Take first match
-            break
+        try:
+            if pattern.startswith('/') or pattern.startswith('../'):
+                # Absolute or relative paths
+                matches = list(Path('/').glob(pattern.lstrip('/'))) if pattern.startswith('/') else list(Path('.').glob(pattern))
+            else:
+                # Relative to project root
+                matches = list(project_root.glob(pattern))
+            
+            if matches:
+                test_file = matches[0]
+                logger.info(f"✅ Found test data: {test_file}")
+                break
+        except Exception as e:
+            logger.debug(f"Pattern {pattern} failed: {e}")
+            continue
+    
+    # If still not found, list available files for debugging
+    if not train_file or not test_file:
+        logger.info("🔍 Available files for debugging:")
+        try:
+            # List current directory
+            logger.info(f"Current directory ({project_root}):")
+            for item in project_root.iterdir():
+                logger.info(f"  - {item}")
+            
+            # Check common Kaggle input paths
+            kaggle_input = Path('/kaggle/input')
+            if kaggle_input.exists():
+                logger.info("Kaggle input directory:")
+                for item in kaggle_input.rglob('*.csv'):
+                    logger.info(f"  - {item}")
+                    
+        except Exception as e:
+            logger.warning(f"Could not list files: {e}")
     
     if not train_file:
         raise FileNotFoundError(
-            "train_data.csv not found in project directory. "
-            "Please ensure the file exists in the project root or data/ subdirectory."
+            "train_data.csv not found. Searched in:\n"
+            "- Current directory and subdirectories\n"
+            "- /kaggle/input/ and subdirectories\n"
+            "- ../input/ and subdirectories\n"
+            "Please ensure the file exists in one of these locations."
         )
     
     if not test_file:
         raise FileNotFoundError(
-            "test_data.csv not found in project directory. "
-            "Please ensure the file exists in the project root or data/ subdirectory."
+            "test_data.csv not found. Searched in:\n"
+            "- Current directory and subdirectories\n"
+            "- /kaggle/input/ and subdirectories\n"
+            "- ../input/ and subdirectories\n"
+            "Please ensure the file exists in one of these locations."
         )
     
     return str(train_file), str(test_file)

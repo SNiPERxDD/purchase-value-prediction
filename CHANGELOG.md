@@ -5,6 +5,31 @@ All notable changes to the Purchase Value Prediction pipeline are documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.5] - 2025-01-28
+
+### Added
+- **Enhanced Kaggle Environment Compatibility**
+  - Extended file search patterns for Kaggle notebooks (`/kaggle/input/*/`, `../input/*/`)
+  - Comprehensive file discovery with debugging information when files not found
+  - Support for multiple common data directory structures
+  - Automatic file listing for troubleshooting in different environments
+
+### Fixed
+- **File Discovery Issues**
+  - Fixed HyperParams.py structural issues with progress bar context management
+  - Resolved indentation problems that caused code to run outside progress tracking
+  - Enhanced error messages with specific search locations
+  - Added robust file path handling for different execution environments
+
+### Changed
+- **Improved Error Handling**
+  - Better debugging information when data files are not found
+  - More informative error messages with search path details
+  - Enhanced logging for file discovery process
+  - Graceful handling of different file system structures
+
+---
+
 ## [1.0.4] - 2025-01-28
 
 ### Added
