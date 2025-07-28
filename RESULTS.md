@@ -150,11 +150,6 @@ Refine Best → lr=0.1, depth=8, gamma=0, lambda=10 → R²=0.86
 > *Both HyperParams.py and Predictor.py are confirmed to run in **CPU-only** mode.
 > No GPU libraries (CUDA, ROCm, Metal) are required.*
 
-**Verification Checklist:**
-- ✅ Confirm xgboost reports `tree_method='hist'` or `exact` (not `gpu_hist`)
-- ✅ Confirm no GPU-specific libraries in requirements.txt
-- ✅ Confirm no torch or tensorflow imports exist
-
 ### **Optimization Insights**
 - **Subsampling**: 0.6 subsample rate optimal for preventing overfitting
 - **Feature Selection**: 7 PCA components capture 93% of variance
@@ -193,4 +188,4 @@ These visualizations help understand:
 
 For detailed information about recent improvements including dynamic parameter management, comprehensive error handling, and production-ready logging, see **[CHANGELOG.md](./CHANGELOG.md)**.
 
-The latest v1.0.0 release includes major production-readiness improvements that enhance pipeline reliability while maintaining the excellent model performance documented above. 
+The latest v1.0.8 release includes documentation refresh with normalized metrics, privacy cleanup, and CPU-only verification while maintaining the excellent model performance documented above. 
